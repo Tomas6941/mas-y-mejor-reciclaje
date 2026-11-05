@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EcoPunto: encontrá puntos de reciclaje en Córdoba, aprendé a separar tus residuos, consultá horarios y seguí tu impacto ambiental.">
+  <meta name="theme-color" content="#176b45">
+  <title>EcoPunto | Reciclar en Córdoba, más simple</title>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23176b45'/%3E%3Cpath d='M47 17c-13 0-25 5-25 18 0 5 3 9 8 9 13 0 17-15 17-27Z' fill='%23d7f59a'/%3E%3Cpath d='M18 48c2-12 8-19 18-23' fill='none' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Aplica el tema guardado antes del primer render para evitar un destello. -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('ecopunto.theme.v1');
+        var dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      } catch (error) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido principal</a>
+
+  <!-- Sprite de íconos SVG reutilizables, sin dependencias externas. -->
+  <svg class="svg-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></symbol>
+    <symbol id="i-recycle" viewBox="0 0 24 24"><path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5"/><path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12"/><path d="m14 16-3 3 3 3"/><path d="M8.293 13.596 7.196 9.5 3.1 10.598"/><path d="m9.344 5.811 1.093-1.892A1.83 1.83 0 0 1 11.985 3a1.784 1.784 0 0 1 1.546.888l3.943 6.843"/><path d="m13.378 9.633 4.096 1.098 1.097-4.096"/></symbol>
+    <symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+    <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></symbol>
+    <symbol id="i-bell-off" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742"/><path d="m2 2 20 20"/><path d="M8.668 3.01A6 6 0 0 1 18 8c0 2.687.482 4.628 1.258 5.946"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5Z"/></symbol>
+    <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  </svg>
+
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner container">
+      <a class="brand" href="#inicio">
+        <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg></span>
+        <span class="brand-copy">EcoPunto<span class="brand-dot">.</span><small>Córdoba</small></span>
+        <span class="sr-only">, ir al inicio</span>
+      </a>
+
+      <nav class="main-nav" id="primaryNav" aria-label="Navegación principal">
+        <ul>
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#mapa">Mapa</a></li>
+          <li><a href="#reportar">Reportar</a></li>
+          <li><a href="#guia">Guía</a></li>
+          <li><a href="#calendario">Calendario</a></li>
+          <li><a href="#seguimiento">Seguimiento</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <a class="header-cta" href="#mapa">Explorar mapa <svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+        <button class="icon-button theme-toggle" id="themeToggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false">
+          <svg class="icon theme-icon-moon" aria-hidden="true"><use href="#i-moon"></use></svg>
+          <svg class="icon theme-icon-sun" aria-hidden="true"><use href="#i-sun"></use></svg>
+        </button>
+        <button class="icon-button nav-toggle" id="navToggle" type="button" aria-label="Abrir menú" aria-controls="primaryNav" aria-expanded="false">
+          <svg class="icon nav-icon-menu" aria-hidden="true"><use href="#i-menu"></use></svg>
+          <svg class="icon nav-icon-close" aria-hidden="true"><use href="#i-x"></use></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="contenido">
+    <!-- ===================== INICIO ===================== -->
+    <section class="hero" id="inicio" aria-labelledby="heroTitle">
+      <div class="hero-glow hero-glow-one" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow-two" aria-hidden="true"></div>
+      <div class="container">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow"><span class="eyebrow-dot"></span> Economía circular en Córdoba</p>
+            <h1 id="heroTitle">Reciclar bien empieza por saber <em>dónde.</em></h1>
+            <p class="hero-lead">Encontrá puntos y contenedores cerca, aprendé qué va en cada uno, organizá tus horarios y seguí tu impacto. Todo en un solo lugar, pensado para tu día a día.</p>
+
+            <div class="hero-actions">
+              <a class="button button-primary" href="#mapa">
+                <svg class="icon" aria-hidden="true"><use href="#i-map-pin"></use></svg>
+                Encontrar un EcoPunto
+              </a>
+              <a class="button button-secondary" href="#guia">
+                <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+                ¿Dónde va esto?
+              </a>
+            </div>
+
+            <div class="hero-shortcuts" aria-label="Accesos rápidos">
+              <a href="#reportar"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg> Reportar contenedor</a>
+              <a href="#calendario"><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg> Ver horarios</a>
+              <a href="#seguimiento"><svg class="icon" aria-hidden="true"><use href="#i-chart"></use></svg> Mi impacto</a>
+            </div>
+
+            <ul class="hero-trust" aria-label="Beneficios de EcoPunto">
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> Sin registro</li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> Datos en tu dispositivo</li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> Hecho en Córdoba</li>
+            </ul>
+          </div>
+
+          <div class="hero-visual">
+            <div class="impact-card">
+              <div class="impact-head">
+                <div>
+                  <p class="card-label">Tu impacto ambiental</p>
+                  <p class="impact-heading">Cada kilo cuenta</p>
+                </div>
+                <span class="live-chip"><span class="live-dot"></span> En vivo</span>
+              </div>
+
+              <div class="impact-body">
+                <div class="impact-ring" id="impactRing" style="--progress: 0" role="img" aria-label="Progreso de reciclaje mensual">
+                  <div class="impact-ring-inner">
+                    <strong id="heroKg">0,0</strong>
+                    <span>kg reciclados</span>
+                  </div>
+                </div>
+                <div class="impact-details">
+                  <div class="impact-row">
+                    <span>Meta del mes <strong id="heroGoalPct">0%</strong></span>
+                    <div class="goal-track" aria-hidden="true"><span id="heroGoalBar"></span></div>
+                    <p id="heroMonthlyText">0,0 de 50 kg este mes</p>
+                  </div>
+                  <div class="impact-row streak-row">
+                    <span class="streak-icon"><svg class="icon" aria-hidden="true"><use href="#i-flame"></use></svg></span>
+                    <div>
+                      <strong id="heroStreak">0 días</strong>
+                      <span>racha reciclando</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="impact-last" id="heroLastRecord">
+                <span class="impact-last-icon"><svg class="icon" aria-hidden="true"><use href="#i-recycle"></use></svg></span>
+                <p>Todavía no hay registros. <strong>¡Empezá hoy!</strong></p>
+                <a href="#seguimiento" class="round-link" aria-label="Ir a mi seguimiento"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+              </div>
+            </div>
+
+            <div class="floating-note floating-note-top" aria-hidden="true">
+              <span class="status-dot status-dot--available"></span>
+              Punto verde disponible
+            </div>
+            <div class="floating-note floating-note-bottom" aria-hidden="true">
+              <span class="floating-recycle"><svg class="icon" aria-hidden="true"><use href="#i-recycle"></use></svg></span>
+              <span><strong id="floatingPoints">14</strong> puntos en Córdoba</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-stats" aria-label="Métricas de la plataforma">
+          <article class="hero-stat">
+            <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-recycle"></use></svg></span>
+            <div><strong data-counter="kg" data-decimals="1">0</strong><span>kg reciclados</span></div>
+          </article>
+          <article class="hero-stat">
+            <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-map-pin"></use></svg></span>
+            <div><strong data-counter="points">0</strong><span>puntos registrados</span></div>
+          </article>
+          <article class="hero-stat">
+            <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg></span>
+            <div><strong data-counter="reports">0</strong><span>reportes de la comunidad</span></div>
+          </article>
+          <article class="hero-stat">
+            <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-users"></use></svg></span>
+            <div><strong data-counter="neighbors">0</strong><span>vecinos en la red</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== MAPA ===================== -->
+    <section class="section map-section" id="mapa" aria-labelledby="mapTitle">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-map-pin"></use></svg> Red de reciclaje</p>
+            <h2 id="mapTitle">Tu próximo punto está <em>más cerca</em> de lo que pensás.</h2>
+            <p>Explorá puntos verdes y contenedores de Córdoba. Filtrá por material, revisá el estado en tiempo real y elegí el que te queda mejor.</p>
+          </div>
+          <div class="section-summary" aria-live="polite">
+            <span class="status-dot status-dot--available"></span>
+            <span id="mapStatusSummary">14 lugares activos</span>
+          </div>
+        </div>
+
+        <div class="map-toolbar reveal">
+          <div class="search-control">
+            <label class="sr-only" for="pointSearch">Buscar punto por nombre o dirección</label>
+            <svg class="icon search-control-icon" aria-hidden="true"><use href="#i-search"></use></svg>
+            <input type="search" id="pointSearch" placeholder="Buscar por nombre o dirección..." autocomplete="off">
+            <button type="button" class="clear-search" id="clearPointSearch" aria-label="Limpiar búsqueda" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg>
+            </button>
+          </div>
+          <div class="filter-chips" id="materialFilters" role="group" aria-label="Filtrar por tipo de material"></div>
+          <button class="text-button filter-reset" id="resetMapFilters" type="button">Limpiar filtros</button>
+        </div>
+
+        <div class="map-layout reveal">
+          <div class="map-panel">
+            <div class="map-canvas" id="map" role="region" aria-label="Mapa interactivo de puntos de reciclaje en Córdoba"></div>
+            <div class="map-fallback" id="mapFallback" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-map-pin"></use></svg>
+              <p>No pudimos cargar el mapa. Revisá tu conexión a internet e intentá de nuevo.</p>
+            </div>
+            <div class="map-empty" id="mapEmpty" hidden>
+              <span><svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg></span>
+              <p>No encontramos lugares con ese criterio.</p>
+              <button class="text-button" id="mapResetEmpty" type="button">Ver todos los lugares</button>
+            </div>
+            <div class="map-footer">
+              <div class="map-legend" aria-label="Referencias de estado">
+                <span><i class="status-dot status-dot--available"></i>Disponible</span>
+                <span><i class="status-dot status-dot--near-full"></i>Casi lleno</span>
+                <span><i class="status-dot status-dot--full"></i>Lleno</span>
+                <span><i class="status-dot status-dot--damaged"></i>En mal estado</span>
+              </div>
+              <p><svg class="icon" aria-hidden="true"><use href="#i-users"></use></svg> Estado actualizado por la comunidad</p>
+            </div>
+          </div>
+
+          <aside class="places-panel" aria-label="Lista de puntos y contenedores">
+            <div class="places-head">
+              <div>
+                <p class="card-label">Cerca de vos</p>
+                <h3>Puntos y contenedores</h3>
+              </div>
+              <span class="count-chip" id="placesCount">14</span>
+            </div>
+            <div class="places-list" id="placesList"></div>
+            <p class="places-note"><svg class="icon" aria-hidden="true"><use href="#i-info"></use></svg> Los estados son reportados por la comunidad. Si algo no coincide, avisanos.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== REPORTAR ===================== -->
+    <section class="section section-soft" id="reportar" aria-labelledby="reportTitle">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg> Cuidado compartido</p>
+            <h2 id="reportTitle">Un contenedor lleno no debería <em>frenar</em> tus ganas.</h2>
+            <p>Contanos cómo está el lugar que visitaste. Tu reporte actualiza el estado del mapa y ayuda a que la próxima persona no pierda el viaje.</p>
+          </div>
+          <div class="section-badge"><svg class="icon" aria-hidden="true"><use href="#i-sparkles"></use></svg> Reportar toma 20 segundos</div>
+        </div>
+
+        <div class="report-layout">
+          <div class="card form-card reveal">
+            <div class="card-heading">
+              <span class="step-chip">Nuevo reporte</span>
+              <h3>¿Cómo está el contenedor?</h3>
+              <p>Elegí el lugar y contanos qué encontraste.</p>
+            </div>
+
+            <form id="reportForm" novalidate>
+              <div class="field">
+                <label for="reportPoint">Punto o contenedor <span aria-hidden="true">*</span></label>
+                <div class="select-wrap">
+                  <select id="reportPoint" name="point" aria-describedby="reportPointError">
+                    <option value="">Seleccioná un lugar</option>
+                  </select>
+                  <svg class="icon select-icon" aria-hidden="true"><use href="#i-chevron-down"></use></svg>
+                </div>
+                <p class="field-error" id="reportPointError" role="alert"></p>
+              </div>
+
+              <fieldset class="report-types" id="reportTypeGroup">
+                <legend>Tipo de reporte <span aria-hidden="true">*</span></legend>
+                <div class="report-type-grid">
+                  <label class="report-type">
+                    <input type="radio" name="reportType" value="full">
+                    <span class="report-type-content">
+                      <span class="report-type-icon report-type-icon--full"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg></span>
+                      <strong>Está lleno</strong>
+                      <small>Ya no entra más material</small>
+                    </span>
+                  </label>
+                  <label class="report-type">
+                    <input type="radio" name="reportType" value="damaged">
+                    <span class="report-type-content">
+                      <span class="report-type-icon report-type-icon--damaged"><svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg></span>
+                      <strong>Está dañado</strong>
+                      <small>Roto, sucio o sin tapa</small>
+                    </span>
+                  </label>
+                  <label class="report-type">
+                    <input type="radio" name="reportType" value="available">
+                    <span class="report-type-content">
+                      <span class="report-type-icon report-type-icon--available"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
+                      <strong>Está disponible</strong>
+                      <small>Tiene espacio para reciclar</small>
+                    </span>
+                  </label>
+                </div>
+                <p class="field-error" id="reportTypeError" role="alert"></p>
+              </fieldset>
+
+              <div class="field">
+                <label for="reportComment">Comentario <span class="label-optional">(opcional)</span></label>
+                <textarea id="reportComment" name="comment" maxlength="180" rows="3" placeholder="Ej.: está desbordado y hay bolsas alrededor." aria-describedby="reportCommentHelp reportCommentCount"></textarea>
+                <div class="field-helper" id="reportCommentHelp">
+                  <span>Sumá un detalle útil para el próximo vecino.</span>
+                  <span id="reportCommentCount">0/180</span>
+                </div>
+              </div>
+
+              <button class="button button-primary button-full" type="submit">
+                <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>
+                Enviar reporte
+              </button>
+              <p class="form-note"><svg class="icon" aria-hidden="true"><use href="#i-info"></use></svg> Este es un reporte comunitario simulado y se guarda en tu dispositivo.</p>
+            </form>
+          </div>
+
+          <div class="card reports-card reveal">
+            <div class="reports-head">
+              <div>
+                <p class="card-label">Actividad reciente</p>
+                <h3>Últimos reportes</h3>
+              </div>
+              <span class="count-chip" id="reportsCount">0</span>
+            </div>
+            <div class="reports-list" id="reportsList"></div>
+            <div class="community-note">
+              <span class="community-icon"><svg class="icon" aria-hidden="true"><use href="#i-users"></use></svg></span>
+              <p><strong>Gracias por sumar.</strong> Cada reporte ayuda a que el mapa sea más útil para toda la comunidad.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== GUÍA ===================== -->
+    <section class="section guide-section" id="guia" aria-labelledby="guideTitle">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-book"></use></svg> Guía de clasificación</p>
+            <h2 id="guideTitle">Esa duda de <em>“¿va acá?”</em> la resolvemos juntos.</h2>
+            <p>Buscá un residuo y te decimos en qué contenedor va, con un consejo para prepararlo bien antes de reciclarlo.</p>
+          </div>
+          <div class="section-badge"><svg class="icon" aria-hidden="true"><use href="#i-recycle"></use></svg> 7 categorías · +35 residuos</div>
+        </div>
+
+        <div class="guide-search-card reveal">
+          <div class="guide-search-copy">
+            <span class="guide-search-kicker">Buscador de residuos</span>
+            <h3>¿Dónde va una caja de pizza?</h3>
+            <p>Escribí el residuo. También podés buscar por palabra clave.</p>
+          </div>
+          <form class="guide-form" id="guideSearchForm" role="search" novalidate>
+            <div class="guide-search-box">
+              <svg class="icon guide-search-icon" aria-hidden="true"><use href="#i-search"></use></svg>
+              <label class="sr-only" for="guideSearch">Buscar dónde va un residuo</label>
+              <input type="text" id="guideSearch" placeholder="Ej.: botella de vidrio, pilas, caja de pizza..."
+                role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="guideSuggestions"
+                aria-activedescendant="" autocomplete="off" spellcheck="false">
+              <button class="button button-primary guide-submit" type="submit">Buscar</button>
+              <div class="suggestions" id="guideSuggestions" role="listbox" aria-label="Sugerencias de residuos" hidden></div>
+            </div>
+            <div class="popular-searches" aria-label="Búsquedas populares">
+              <span>Probá con:</span>
+              <button type="button" data-guide-query="caja de pizza">caja de pizza</button>
+              <button type="button" data-guide-query="botella de plástico">botella de plástico</button>
+              <button type="button" data-guide-query="pila AAA">pilas</button>
+              <button type="button" data-guide-query="lata de gaseosa">lata de gaseosa</button>
+            </div>
+          </form>
+          <div class="guide-result" id="guideResult" aria-live="polite">
+            <div class="guide-result-placeholder">
+              <span class="result-placeholder-icon"><svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg></span>
+              <div><strong>Tu respuesta aparece acá</strong><p>Empezá a escribir arriba y te mostramos el contenedor correcto.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-content">
+          <div class="guide-categories reveal">
+            <div class="subsection-head">
+              <div>
+                <p class="card-label">De un vistazo</p>
+                <h3>Guía rápida por material</h3>
+              </div>
+              <p>Desplegá cada categoría</p>
+            </div>
+            <div class="accordion" id="categoryAccordion"></div>
+          </div>
+
+          <aside class="quiz-card reveal" aria-labelledby="quizTitle">
+            <div class="quiz-decoration" aria-hidden="true"><svg class="icon"><use href="#i-recycle"></use></svg></div>
+            <div class="quiz-head">
+              <span class="quiz-kicker"><svg class="icon" aria-hidden="true"><use href="#i-sparkles"></use></svg> Mini quiz</span>
+              <h3 id="quizTitle">Poné a prueba tu ojo reciclador.</h3>
+              <p>5 preguntas rápidas. Sin presión, solo aprendizaje.</p>
+            </div>
+            <div class="quiz-content" id="quizContent"></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CALENDARIO ===================== -->
+    <section class="section section-soft calendar-section" id="calendario" aria-labelledby="calendarTitle">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg> Recolección en tu barrio</p>
+            <h2 id="calendarTitle">Tu semana, organizada para <em>no perder</em> ninguna recolección.</h2>
+            <p>Elegí tu barrio y consultá los días y horarios por tipo de residuo. Activá un recordatorio y tenelo siempre a mano.</p>
+          </div>
+          <div class="section-badge"><svg class="icon" aria-hidden="true"><use href="#i-bell"></use></svg> Recordatorio local</div>
+        </div>
+
+        <div class="calendar-topbar reveal">
+          <div class="neighborhood-picker">
+            <label for="neighborhoodSelect"><svg class="icon" aria-hidden="true"><use href="#i-map-pin"></use></svg> Elegí tu barrio</label>
+            <div class="select-wrap">
+              <select id="neighborhoodSelect"></select>
+              <svg class="icon select-icon" aria-hidden="true"><use href="#i-chevron-down"></use></svg>
+            </div>
+          </div>
+          <p><svg class="icon" aria-hidden="true"><use href="#i-info"></use></svg> Horarios demostrativos · verificá siempre con el municipio</p>
+        </div>
+
+        <div class="calendar-layout">
+          <div class="calendar-card reveal">
+            <div class="calendar-head">
+              <div>
+                <p class="card-label">Vista semanal</p>
+                <h3 id="weekLabel">Tu semana</h3>
+              </div>
+              <p class="week-hint"><span class="week-hint-dot"></span> Días con recolección</p>
+            </div>
+
+            <div class="reminder-notice" id="reminderNotice" role="status" hidden>
+              <span class="reminder-notice-icon"><svg class="icon" aria-hidden="true"><use href="#i-bell"></use></svg></span>
+              <div>
+                <strong>Recordatorio activo</strong>
+                <p id="reminderNoticeText"></p>
+              </div>
+              <button class="text-button" id="disableReminder" type="button">Desactivar</button>
+            </div>
+
+            <div class="week-grid" id="weekGrid"></div>
+
+            <div class="schedule-list" id="scheduleList"></div>
+          </div>
+
+          <aside class="next-collection reveal" aria-labelledby="nextCollectionTitle">
+            <div class="next-pattern" aria-hidden="true"></div>
+            <div class="next-head">
+              <span class="next-label" id="nextCollectionTitle">Próxima recolección</span>
+              <span class="next-live"><span></span> Calculada desde hoy</span>
+            </div>
+            <div class="next-icon" id="nextIcon"><svg class="icon" aria-hidden="true"><use href="#i-recycle"></use></svg></div>
+            <p class="next-type" id="nextType">Reciclables</p>
+            <h3 class="next-date" id="nextDate">—</h3>
+            <div class="next-meta">
+              <span><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg> <span id="nextTime">—</span></span>
+              <span><svg class="icon" aria-hidden="true"><use href="#i-map-pin"></use></svg> <span id="nextNeighborhood">—</span></span>
+            </div>
+            <button class="reminder-button" id="reminderToggle" type="button" aria-pressed="false">
+              <svg class="icon" aria-hidden="true"><use href="#i-bell"></use></svg>
+              <span>Activar recordatorio</span>
+            </button>
+            <p class="next-note">Aviso simulado: se guarda en este dispositivo y aparece al volver a abrir la página.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== SEGUIMIENTO ===================== -->
+    <section class="section tracking-section" id="seguimiento" aria-labelledby="trackingTitle">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-chart"></use></svg> Mi seguimiento</p>
+            <h2 id="trackingTitle">Tus gestos chiquitos, <em>en grandes números.</em></h2>
+            <p>Registrá lo que reciclás, mirá cómo evoluciona tu impacto y desbloqueá logros mientras sumás kilos.</p>
+          </div>
+          <div class="section-actions">
+            <button class="button button-secondary button-small" id="exportBtn" type="button">
+              <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg> Exportar CSV
+            </button>
+            <button class="button button-danger button-small" id="clearDataBtn" type="button">
+              <svg class="icon" aria-hidden="true"><use href="#i-trash"></use></svg> Borrar datos
+            </button>
+          </div>
+        </div>
+
+        <div class="tracking-grid reveal">
+          <div class="card tracking-form-card">
+            <div class="card-heading">
+              <span class="step-chip">Nuevo registro</span>
+              <h3>Sumá tu reciclaje</h3>
+              <p>Todos los datos quedan guardados solo en tu navegador.</p>
+            </div>
+            <form id="trackingForm" novalidate>
+              <div class="field">
+                <label for="recordMaterial">Material <span aria-hidden="true">*</span></label>
+                <div class="select-wrap">
+                  <select id="recordMaterial" name="material">
+                    <option value="">Elegí un material</option>
+                  </select>
+                  <svg class="icon select-icon" aria-hidden="true"><use href="#i-chevron-down"></use></svg>
+                </div>
+                <p class="field-error" id="materialError" role="alert"></p>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label for="recordQuantity">Cantidad (kg) <span aria-hidden="true">*</span></label>
+                  <div class="input-with-suffix">
+                    <input type="text" id="recordQuantity" name="quantity" inputmode="decimal" autocomplete="off" placeholder="0,0" aria-describedby="quantityError">
+                    <span>kg</span>
+                  </div>
+                  <p class="field-error" id="quantityError" role="alert"></p>
+                </div>
+                <div class="field">
+                  <label for="recordDate">Fecha <span aria-hidden="true">*</span></label>
+                  <input type="date" id="recordDate" name="date">
+                  <p class="field-error" id="dateError" role="alert"></p>
+                </div>
+              </div>
+              <button class="button button-primary button-full" type="submit">
+                <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg> Registrar reciclaje
+              </button>
+            </form>
+            <div class="tracking-tip">
+              <span><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></span>
+              <p><strong>Consejo:</strong> pesá o estimá tus materiales cada vez que los lleves a un punto. La constancia es lo que hace la diferencia.</p>
+            </div>
+          </div>
+
+          <div class="stats-dashboard" aria-label="Resumen de tu impacto">
+            <article class="metric-card metric-card--main">
+              <span class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-recycle"></use></svg></span>
+              <p>Total reciclado</p>
+              <strong><span id="statTotalKg">0,0</span><small> kg</small></strong>
+              <span class="metric-foot" id="statTotalMeta">Tu impacto acumulado</span>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-target"></use></svg></span>
+              <p>Registros</p>
+              <strong id="statRecords">0</strong>
+              <span class="metric-foot">Desde tu primer aporte</span>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-flame"></use></svg></span>
+              <p>Racha actual</p>
+              <strong><span id="statStreak">0</span><small> días</small></strong>
+              <span class="metric-foot" id="streakMeta">Registrá hoy para empezar</span>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#i-award"></use></svg></span>
+              <p>Material estrella</p>
+              <strong class="metric-material" id="statTopMaterial">—</strong>
+              <span class="metric-foot" id="statTopMaterialMeta">Todavía sin datos</span>
+            </article>
+          </div>
+        </div>
+
+        <div class="charts-grid reveal">
+          <div class="card chart-card">
+            <div class="chart-head">
+              <div>
+                <p class="card-label">Por material</p>
+                <h3>¿Qué estás reciclando más?</h3>
+              </div>
+              <span class="chart-tag">Histórico</span>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="materialChart" aria-label="Gráfico de barras de kilogramos reciclados por material" role="img"></canvas>
+              <div class="chart-empty" id="barEmpty" hidden>
+                <svg class="icon" aria-hidden="true"><use href="#i-chart"></use></svg>
+                <p>Sumá tu primer registro para ver el gráfico.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card chart-card">
+            <div class="chart-head">
+              <div>
+                <p class="card-label">Evolución</p>
+                <h3>Tu ritmo de reciclaje</h3>
+              </div>
+              <div class="segmented" role="group" aria-label="Ver evolución por semana o por mes">
+                <button class="is-active" type="button" data-trend="week" aria-pressed="true">Semanal</button>
+                <button type="button" data-trend="month" aria-pressed="false">Mensual</button>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="trendChart" aria-label="Gráfico de línea de evolución del reciclaje" role="img"></canvas>
+              <div class="chart-empty" id="trendEmpty" hidden>
+                <svg class="icon" aria-hidden="true"><use href="#i-chart"></use></svg>
+                <p>Tu evolución aparecerá cuando registres reciclaje.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="achievements-card reveal">
+          <div class="achievements-head">
+            <div>
+              <p class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-award"></use></svg> Logros</p>
+              <h3>Insignias que ya son tuyas</h3>
+              <p>Cada logro se desbloquea automáticamente con tus registros.</p>
+            </div>
+            <div class="achievement-progress">
+              <strong id="achievementCount">0/6</strong>
+              <span>desbloqueadas</span>
+            </div>
+          </div>
+          <div class="achievements-grid" id="achievementsGrid"></div>
+        </div>
+
+        <div class="tracking-note reveal">
+          <p><svg class="icon" aria-hidden="true"><use href="#i-info"></use></svg> Tus registros son privados y viven únicamente en este navegador. Exportalos cuando quieras para guardarlos aparte.</p>
+          <button class="text-button" id="scrollToForm" type="button">Agregar otro registro <svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg></button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer" id="contacto">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-about">
+          <a class="brand brand--footer" href="#inicio">
+            <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg></span>
+            <span class="brand-copy">EcoPunto<span class="brand-dot">.</span><small>Córdoba</small></span>
+            <span class="sr-only">, ir al inicio</span>
+          </a>
+          <p>Una plataforma abierta para hacer del reciclaje un hábito simple, informado y compartido en Córdoba.</p>
+          <div class="footer-badges">
+            <span><svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg> Economía circular</span>
+            <span><svg class="icon" aria-hidden="true"><use href="#i-info"></use></svg> Proyecto demo</span>
+          </div>
+        </div>
+
+        <nav class="footer-nav" aria-label="Enlaces del pie de página">
+          <h3>Explorar</h3>
+          <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#mapa">Mapa de reciclaje</a></li>
+            <li><a href="#reportar">Reportar contenedor</a></li>
+            <li><a href="#guia">Guía de clasificación</a></li>
+            <li><a href="#calendario">Calendario</a></li>
+            <li><a href="#seguimiento">Mi seguimiento</a></li>
+          </ul>
+        </nav>
+
+        <div class="footer-contact">
+          <h3>¿Tenés una duda o idea?</h3>
+          <p>Escribinos. Este formulario es simulado y no envía datos a ningún servidor.</p>
+          <form id="contactForm" novalidate>
+            <div class="footer-field-row">
+              <div class="field field--footer">
+                <label for="contactName">Nombre</label>
+                <input type="text" id="contactName" name="name" autocomplete="name" required placeholder="Tu nombre">
+              </div>
+              <div class="field field--footer">
+                <label for="contactEmail">Email</label>
+                <input type="email" id="contactEmail" name="email" autocomplete="email" required placeholder="vos@email.com">
+              </div>
+            </div>
+            <div class="field field--footer">
+              <label for="contactMessage">Mensaje</label>
+              <textarea id="contactMessage" name="message" rows="3" required placeholder="Contanos tu idea..."></textarea>
+            </div>
+            <button class="button button-light button-full" type="submit">
+              <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg> Enviar mensaje
+            </button>
+            <p class="contact-feedback" id="contactFeedback" role="status"></p>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© <span id="year">2026</span> EcoPunto. Proyecto demostrativo, sin fines comerciales. Los estados, horarios y datos son de ejemplo.</p>
+        <a href="#inicio" class="footer-top">Volver arriba <svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg></a>
+      </div>
+    </div>
+  </footer>
+
+  <a href="#inicio" class="back-to-top" id="backToTop" aria-label="Volver al inicio">
+    <svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg>
+  </a>
+
+  <div class="toast-region" id="toastRoot" role="status" aria-live="polite" aria-atomic="false"></div>
+
+  <dialog class="confirm-dialog" id="clearDialog" aria-labelledby="clearDialogTitle" aria-describedby="clearDialogText">
+    <div class="dialog-icon"><svg class="icon" aria-hidden="true"><use href="#i-trash"></use></svg></div>
+    <h2 id="clearDialogTitle">¿Borrar todos tus registros?</h2>
+    <p id="clearDialogText">Se eliminarán los datos de reciclaje guardados en este dispositivo y se reiniciarán tus estadísticas. Los reportes comunitarios no se modifican.</p>
+    <div class="dialog-actions">
+      <button class="button button-secondary" id="cancelClearBtn" type="button">Cancelar</button>
+      <button class="button button-danger" id="confirmClearBtn" type="button">Sí, borrar todo</button>
+    </div>
+  </dialog>
+
+  <noscript>
+    <p class="noscript-message">EcoPunto necesita JavaScript para funcionar. Activá JavaScript en tu navegador y recargá la página.</p>
+  </noscript>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
