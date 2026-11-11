@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, MapPin, Search, SlidersHorizontal } from 'lucide-react';
 import { MATERIALS, MATERIAL_MAP, STATUS } from '@/data/materials';
 import { MAP_CENTER, MAP_ZOOM } from '@/data/constants';
 import { navigate } from '@/lib/routes';
+import { useHashRoute } from '@/hooks/useHashRoute';
 import { usePointsStore } from '@/store';
 import type { MaterialKey, PointStatus } from '@/types/domain';
 import { MapCanvas } from './MapCanvas';
@@ -17,10 +18,18 @@ const STATUS_OPTIONS: { value: PointStatus | 'all'; label: string }[] = [
 
 export default function MapSection() {
   const { points } = usePointsStore();
+  const { params } = useHashRoute();
   const [query, setQuery] = useState('');
   const [material, setMaterial] = useState<MaterialKey | 'all'>('all');
   const [status, setStatus] = useState<PointStatus | 'all'>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const requested = params.get('material');
+    const validMaterial = MATERIALS.find((item) => item.key === requested)?.key;
+    if (validMaterial) setMaterial(validMaterial);
+  }, [params]);
+
   const filteredPoints = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase('es-AR');
     return points.filter((point) => {
