@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from 'react-leaflet';
 import { MATERIAL_MAP, STATUS } from '@/data/materials';
 import type { RecyclePoint } from '@/types/domain';
@@ -14,9 +15,10 @@ interface MapCanvasProps {
 
 function MapViewport({ selectedPoint }: { selectedPoint: RecyclePoint | null }) {
   const map = useMap();
+  const shouldReduceMotion = useReducedMotion();
   useEffect(() => {
-    if (selectedPoint) map.flyTo([selectedPoint.lat, selectedPoint.lng], Math.max(map.getZoom(), 14), { duration: 0.5 });
-  }, [map, selectedPoint]);
+    if (selectedPoint) map.flyTo([selectedPoint.lat, selectedPoint.lng], Math.max(map.getZoom(), 14), { duration: shouldReduceMotion ? 0 : 0.5 });
+  }, [map, selectedPoint, shouldReduceMotion]);
   return null;
 }
 
