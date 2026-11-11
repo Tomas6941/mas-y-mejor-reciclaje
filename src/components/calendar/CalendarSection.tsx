@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, Clock3, MapPin } from 'lucide-react';
+import { Bell, Clock3, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
