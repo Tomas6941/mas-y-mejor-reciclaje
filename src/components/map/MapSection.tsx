@@ -27,7 +27,8 @@ export default function MapSection() {
   useEffect(() => {
     const requested = params.get('material');
     const validMaterial = MATERIALS.find((item) => item.key === requested)?.key;
-    if (validMaterial) setMaterial(validMaterial);
+    setMaterial(validMaterial ?? 'all');
+    setSelectedId(null);
   }, [params]);
 
   const filteredPoints = useMemo(() => {
