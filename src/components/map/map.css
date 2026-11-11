@@ -1,0 +1,22 @@
+.map-canvas {
+  position: relative;
+  height: clamp(390px, 58vw, 620px);
+  width: 100%;
+  isolation: isolate;
+  background: rgb(var(--surface-soft));
+}
+.map-canvas .leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+  font-family: inherit;
+}
+.map-canvas .leaflet-control-attribution { font-size: 10px; }
+.map-canvas .leaflet-popup-content-wrapper,
+.map-canvas .leaflet-popup-tip {
+  background: rgb(var(--surface));
+  color: rgb(var(--foreground));
+}
+@media (max-width: 640px) {
+  .map-canvas { height: 430px; }
+}
