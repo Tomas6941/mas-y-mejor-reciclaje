@@ -29,7 +29,7 @@ export function MapCanvas({ points, selectedId, onSelect, center, zoom }: MapCan
         <MapViewport selectedPoint={selectedPoint} />
         {points.map((point) => {
           const material = MATERIAL_MAP[point.materials[0]];
-          const color = point.status === 'damaged' ? '#D94841' : point.status === 'full' ? '#C58A24' : material.color;
+          const color = point.status === 'damaged' ? 'rgb(var(--status-damaged))' : point.status === 'full' ? 'rgb(var(--danger))' : point.status === 'near-full' ? 'rgb(var(--status-near-full))' : material.color;
           return <CircleMarker key={point.id} center={[point.lat, point.lng]} radius={selectedId === point.id ? 11 : 8} pathOptions={{ color: '#fff', weight: 2, fillColor: color, fillOpacity: 0.95 }} eventHandlers={{ click: () => onSelect(point.id) }}><Popup><strong>{point.name}</strong><br />{point.address}<br />{STATUS[point.status].label}</Popup></CircleMarker>;
         })}
       </MapContainer>
