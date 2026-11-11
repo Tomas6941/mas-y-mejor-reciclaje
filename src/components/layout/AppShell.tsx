@@ -13,6 +13,14 @@ import { useHashRoute } from '@/hooks/useHashRoute';
 import { initSmoothScroll, scrollToTop } from '@/lib/lenis';
 import { isStorageAvailable } from '@/lib/storage';
 import { NAV_ITEM_MAP } from '@/lib/routes';
+import { navigate } from '@/lib/routes';
+import { apiRequest } from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
+import { useCalendarStore } from '@/store/calendarStore';
+import { usePointsStore } from '@/store/pointsStore';
+import { useReportsStore } from '@/store/reportsStore';
+import { useTrackingStore } from '@/store/trackingStore';
+import { useQuizStore } from '@/store/quizStore';
 
 const HomeSection = lazy(() => import('@/components/home/HomeSection'));
 const MapSection = lazy(() => import('@/components/map/MapSection'));
@@ -20,6 +28,7 @@ const GuideSection = lazy(() => import('@/components/guide/GuideSection'));
 const CalendarSection = lazy(() => import('@/components/calendar/CalendarSection'));
 const TrackingSection = lazy(() => import('@/components/tracking/TrackingSection'));
 const ReportSection = lazy(() => import('@/components/report/ReportSection'));
+const AdminSection = lazy(() => import('@/components/admin/AdminSection'));
 
 const SECTION_BY_ROUTE = {
   home: HomeSection,
@@ -28,6 +37,7 @@ const SECTION_BY_ROUTE = {
   calendar: CalendarSection,
   tracking: TrackingSection,
   report: ReportSection,
+  admin: AdminSection,
 } as const;
 
 function PageFallback() {
@@ -61,11 +71,48 @@ function PageTransition({ routeKey, children }: { routeKey: string; children: Re
 /** Carcasa de la app: navegación, rutas y transiciones. */
 export function AppShell() {
   const { route } = useHashRoute();
+  const user = useAuthStore((state) => state.user);
   const mainRef = useRef<HTMLElement | null>(null);
   const lastRouteRef = useRef(route);
 
   useEffect(() => {
     initSmoothScroll();
+  }, []);
+
+  useEffect(() => {
+    void usePointsStore.getState().fetchPoints().catch(() => toast.error('No pudimos cargar los puntos de reciclaje.'));
+    void useReportsStore.getState().fetchReports().catch(() => toast.error('No pudimos cargar los reportes.'));
+  }, []);
+
+  useEffect(() => {
+    if (user?.emailVerifiedAt) {
+      void Promise.allSettled([
+        useTrackingStore.getState().fetchRecords(),
+        useQuizStore.getState().fetchResult(),
+        useCalendarStore.getState().fetchPreference(),
+      ]);
+      return;
+    }
+
+    useTrackingStore.getState().clearState();
+    useQuizStore.getState().clearState();
+    useCalendarStore.getState().clearAccountPreference();
+  }, [user?.id, user?.emailVerifiedAt]);
+
+  useEffect(() => {
+    void useAuthStore.getState().loadSession();
+    const [path, query = ''] = window.location.hash.slice(1).split('?');
+    const token = new URLSearchParams(query).get('token');
+
+    if (path === '/confirmar-email' && token) {
+      void apiRequest<{ verified: boolean }>('/auth/verify-email', { body: { token } })
+        .then(() => toast.success('Correo confirmado. Ya podés iniciar sesión.'))
+        .catch((error: unknown) => toast.error(error instanceof Error ? error.message : 'No pudimos confirmar el correo.'))
+        .finally(() => navigate('#/'));
+    } else if (path === '/restablecer-contrasena') {
+      useAuthStore.getState().openAuthDialog('reset', token);
+      navigate('#/');
+    }
   }, []);
 
   useEffect(() => {
