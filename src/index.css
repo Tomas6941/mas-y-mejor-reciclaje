@@ -1,0 +1,294 @@
+@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource-variable/inter';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Tokens de diseño · EcoPunto
+   Base neutra cálida (crema / carbón), verde vivo principal y acento ámbar.
+   Los valores son tripletas RGB para que Tailwind pueda aplicar opacidades.
+   ========================================================================== */
+
+@layer base {
+  :root {
+    --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-display: 'Bricolage Grotesque Variable', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+
+    /* Base neutra cálida */
+    --background: 250 247 240; /* #FAF7F0 crema */
+    --background-soft: 243 238 226; /* #F3EEE2 */
+    --surface: 255 255 255;
+    --surface-soft: 251 249 243;
+    --foreground: 28 27 23; /* #1C1B17 carbón cálido */
+    --foreground-muted: 92 90 82; /* #5C5A52 */
+    --border: 231 226 214; /* #E7E2D6 */
+    --border-strong: 214 207 192;
+
+    /* Verde vivo */
+    --primary: 21 127 61; /* #157F3D */
+    --primary-hover: 17 106 51;
+    --primary-bright: 47 191 113; /* solo gráficos */
+    --primary-soft: 228 243 231;
+    --primary-foreground: 255 255 255;
+
+    /* Acento cálido (amarillo) */
+    --accent: 245 179 1; /* #F5B301 */
+    --accent-hover: 224 160 0;
+    --accent-soft: 253 243 211;
+    --accent-foreground: 28 27 23;
+
+    /* Peligro / alertas (coral) */
+    --danger: 192 53 38; /* #C03526 */
+    --danger-hover: 173 46 33;
+    --danger-soft: 250 231 227;
+    --danger-foreground: 255 255 255;
+
+    /* Estados de puntos (mapa / reportes) */
+    --status-near-full: 180 83 9;
+    --status-near-full-soft: 253 240 217;
+    --status-damaged: 91 107 114;
+    --status-damaged-soft: 228 232 234;
+
+    /* Colores por material: base (rellenos), strong (texto AA), soft (fondos) */
+    --material-papel: 37 99 235;
+    --material-papel-strong: 37 99 235;
+    --material-papel-soft: 227 237 251;
+    --material-plastico: 200 145 0;
+    --material-plastico-strong: 138 102 0;
+    --material-plastico-soft: 247 237 210;
+    --material-vidrio: 14 143 115;
+    --material-vidrio-strong: 11 122 95;
+    --material-vidrio-soft: 221 240 234;
+    --material-metal: 91 107 114;
+    --material-metal-strong: 91 107 114;
+    --material-metal-soft: 228 232 234;
+    --material-organico: 140 90 43;
+    --material-organico-strong: 140 90 43;
+    --material-organico-soft: 240 228 214;
+    --material-electronicos: 112 72 216;
+    --material-electronicos-strong: 112 72 216;
+    --material-electronicos-soft: 233 227 248;
+    --material-pilas: 192 53 38;
+    --material-pilas-strong: 192 53 38;
+    --material-pilas-soft: 248 227 223;
+    --material-general: 99 114 95;
+    --material-general-strong: 99 114 95;
+    --material-general-soft: 231 235 229;
+
+    --shadow-soft: 0 1px 2px rgb(28 27 23 / 0.04), 0 10px 30px rgb(28 27 23 / 0.06);
+    --shadow-lift: 0 4px 10px rgb(28 27 23 / 0.06), 0 18px 44px rgb(28 27 23 / 0.12);
+    --shadow-glow: 0 10px 30px rgb(245 179 1 / 0.35);
+  }
+
+  [data-theme='dark'] {
+    --background: 23 21 15; /* #17150F carbón cálido */
+    --background-soft: 29 27 20;
+    --surface: 33 31 23;
+    --surface-soft: 38 36 27;
+    --foreground: 242 239 231; /* #F2EFE7 */
+    --foreground-muted: 169 164 149;
+    --border: 51 48 39;
+    --border-strong: 69 65 54;
+
+    --primary: 74 222 128; /* #4ADE80 */
+    --primary-hover: 105 232 150;
+    --primary-bright: 74 222 128;
+    --primary-soft: 30 51 36;
+    --primary-foreground: 18 38 17;
+
+    --accent: 245 193 52; /* #F5C134 */
+    --accent-hover: 232 176 30;
+    --accent-soft: 51 42 20;
+    --accent-foreground: 23 21 15;
+
+    --danger: 242 107 87; /* #F26B57 */
+    --danger-hover: 247 130 115;
+    --danger-soft: 50 28 24;
+    --danger-foreground: 23 21 15;
+
+    --status-near-full: 245 193 52;
+    --status-near-full-soft: 51 42 20;
+    --status-damaged: 163 180 188;
+    --status-damaged-soft: 35 42 46;
+
+    --material-papel: 124 169 249;
+    --material-papel-strong: 124 169 249;
+    --material-papel-soft: 29 38 52;
+    --material-plastico: 240 194 78;
+    --material-plastico-strong: 240 194 78;
+    --material-plastico-soft: 46 40 24;
+    --material-vidrio: 63 211 174;
+    --material-vidrio-strong: 63 211 174;
+    --material-vidrio-soft: 23 48 43;
+    --material-metal: 163 180 188;
+    --material-metal-strong: 163 180 188;
+    --material-metal-soft: 35 42 46;
+    --material-organico: 211 154 91;
+    --material-organico-strong: 211 154 91;
+    --material-organico-soft: 46 36 26;
+    --material-electronicos: 180 155 245;
+    --material-electronicos-strong: 180 155 245;
+    --material-electronicos-soft: 38 32 55;
+    --material-pilas: 245 131 118;
+    --material-pilas-strong: 245 131 118;
+    --material-pilas-soft: 50 33 30;
+    --material-general: 163 176 160;
+    --material-general-strong: 163 176 160;
+    --material-general-soft: 35 41 35;
+
+    --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.2), 0 10px 30px rgb(0 0 0 / 0.25);
+    --shadow-lift: 0 4px 10px rgb(0 0 0 / 0.25), 0 18px 44px rgb(0 0 0 / 0.4);
+    --shadow-glow: 0 10px 30px rgb(245 193 52 / 0.25);
+  }
+
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  [data-theme='dark'] {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* Foco siempre visible para navegación por teclado. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--primary));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: rgb(var(--primary-soft));
+    color: rgb(var(--foreground));
+  }
+
+  /* Respeta la preferencia de movimiento reducido. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Contenedor principal de página. */
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Barra con efecto vidrio. */
+  .glass {
+    @apply border border-border/70 bg-background/75 backdrop-blur-xl;
+  }
+}
+
+@layer utilities {
+  /* ---- Fondo aurora (solo portada) ---- */
+  .aurora {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(64px);
+    opacity: 0.55;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .aurora-a {
+    inset: -30% -10% auto -15%;
+    height: 75%;
+    background:
+      radial-gradient(closest-side, rgb(var(--primary-bright) / 0.5), transparent 70%),
+      radial-gradient(closest-side at 70% 60%, rgb(var(--material-vidrio) / 0.35), transparent 75%);
+    animation: aurora-drift 18s ease-in-out infinite alternate;
+  }
+
+  .aurora-b {
+    inset: auto -20% -35% -10%;
+    height: 70%;
+    background:
+      radial-gradient(closest-side, rgb(var(--accent) / 0.4), transparent 70%),
+      radial-gradient(closest-side at 30% 40%, rgb(var(--material-pilas) / 0.22), transparent 75%);
+    animation: aurora-drift 22s ease-in-out infinite alternate-reverse;
+  }
+
+  /* ---- Tarjeta con brillo al pasar el mouse (efecto repetido del sistema) ---- */
+  .glare-card {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .glare-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      340px circle at var(--glare-x, 50%) var(--glare-y, 0%),
+      rgb(var(--primary-bright) / 0.1),
+      transparent 62%
+    );
+    opacity: 0;
+    transition: opacity 220ms ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  [data-theme='dark'] .glare-card::before {
+    background: radial-gradient(
+      340px circle at var(--glare-x, 50%) var(--glare-y, 0%),
+      rgb(var(--primary-bright) / 0.14),
+      transparent 62%
+    );
+  }
+
+  .glare-card:hover::before {
+    opacity: 1;
+  }
+
+  /* ---- Leaflet: tiles acordes al tema ---- */
+  .leaflet-tile {
+    filter: saturate(0.72) contrast(1.02) sepia(0.05) brightness(1.01);
+  }
+
+  [data-theme='dark'] .leaflet-tile {
+    filter: grayscale(0.35) invert(0.92) hue-rotate(178deg) brightness(0.92) contrast(0.9)
+      saturate(0.75);
+  }
+
+  .leaflet-container {
+    background: rgb(var(--background-soft));
+    font-family: var(--font-sans);
+  }
+
+  .leaflet-control-attribution {
+    background: rgb(var(--surface) / 0.8) !important;
+    color: rgb(var(--foreground-muted)) !important;
+  }
+
+  .leaflet-control-attribution a {
+    color: rgb(var(--primary)) !important;
+  }
+
+  .leaflet-bar a {
+    background: rgb(var(--surface)) !important;
+    color: rgb(var(--foreground)) !important;
+    border-color: rgb(var(--border)) !important;
+  }
+
+  .leaflet-bar a:hover {
+    background: rgb(var(--surface-soft)) !important;
+  }
+}
