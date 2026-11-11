@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Flame, Plus, Recycle, Trash2, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,7 @@ export default function TrackingSection() {
   const [material, setMaterial] = useState<MaterialKey | ''>('');
   const [kg, setKg] = useState('');
   const [date, setDate] = useState(todayISO());
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [errors, setErrors] = useState<{ material?: string; kg?: string; date?: string }>({});
   const stats = useMemo(() => getTrackingStats(records), [records]);
   const achievements = getAchievementData(stats);
@@ -50,8 +52,8 @@ export default function TrackingSection() {
   }
 
   function handleClear() {
-    if (!window.confirm('¿Querés borrar todos tus registros de reciclaje? Esta acción no se puede deshacer.')) return;
     clearAll();
+    setClearDialogOpen(false);
     toast.success('Se borró tu historial de seguimiento.');
   }
 
@@ -71,7 +73,7 @@ export default function TrackingSection() {
         </CardContent></Card>
       </div>
       <section className="space-y-4"><div><h2 className="font-display text-2xl font-bold">Tus logros</h2><p className="mt-1 text-sm text-muted">Cada registro te acerca a una nueva meta.</p></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{achievements.map((achievement) => <Card key={achievement.definition.id}><CardContent className="p-5"><div className="flex items-center justify-between"><h3 className="font-semibold">{achievement.definition.title}</h3><Trophy size={18} className={achievement.unlocked ? 'text-accent-foreground' : 'text-muted'} /></div><p className="mt-1 min-h-10 text-xs text-muted">{achievement.definition.description}</p><div className="mt-4 h-2 overflow-hidden rounded-full bg-surface-soft"><div className="h-full rounded-full bg-primary" style={{ width: `${achievement.progress}%` }} /></div><p className="mt-2 text-xs text-muted">{achievement.progressText}{achievement.unlocked ? ' · Desbloqueado' : ''}</p></CardContent></Card>)}</div></section>
-      <Card><CardHeader><div className="flex flex-wrap items-center justify-between gap-3"><div><CardTitle>Historial reciente</CardTitle><CardDescription>Tus últimos registros guardados.</CardDescription></div>{records.length > 0 && <Button variant="outline" size="sm" onClick={handleClear}><Trash2 size={15} /> Borrar historial</Button>}</div></CardHeader><CardContent>{records.length === 0 ? <p className="text-sm text-muted">No hay registros todavía.</p> : <div className="space-y-3">{records.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8).map((record) => <div key={record.id} className="flex items-center justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0"><div><p className="text-sm font-semibold">{MATERIALS.find((item) => item.key === record.material)?.label}</p><p className="text-xs text-muted">{formatLongDate(new Date(`${record.date}T12:00:00`))}</p></div><p className="font-display text-lg font-bold tabular-nums">{formatKg(record.kg)} kg</p></div>)}</div>}</CardContent></Card>
+      <Card><CardHeader><div className="flex flex-wrap items-center justify-between gap-3"><div><CardTitle>Historial reciente</CardTitle><CardDescription>Tus últimos registros guardados.</CardDescription></div>{records.length > 0 && <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}><AlertDialogTrigger asChild><Button variant="outline" size="sm"><Trash2 size={15} /> Borrar historial</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogTitle>¿Borrar todo el historial?</AlertDialogTitle><AlertDialogDescription>Se eliminarán tus registros de reciclaje guardados en este navegador. Esta acción no se puede deshacer.</AlertDialogDescription><div className="mt-6 flex justify-end gap-2"><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleClear}>Borrar historial</AlertDialogAction></div></AlertDialogContent></AlertDialog>}</div></CardHeader><CardContent>{records.length === 0 ? <p className="text-sm text-muted">No hay registros todavía.</p> : <div className="space-y-3">{records.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8).map((record) => <div key={record.id} className="flex items-center justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0"><div><p className="text-sm font-semibold">{MATERIALS.find((item) => item.key === record.material)?.label}</p><p className="text-xs text-muted">{formatLongDate(new Date(`${record.date}T12:00:00`))}</p></div><p className="font-display text-lg font-bold tabular-nums">{formatKg(record.kg)} kg</p></div>)}</div>}</CardContent></Card>
       <p className="text-xs text-muted">Tus registros se guardan en este navegador. No representan mediciones oficiales de residuos recuperados.</p>
     </div>
   );
