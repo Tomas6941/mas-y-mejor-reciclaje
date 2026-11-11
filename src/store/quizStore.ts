@@ -1,40 +1,54 @@
 import { create } from 'zustand';
 
-import { storageGet, storageSet, STORAGE_KEYS } from '@/lib/storage';
-import { validateQuizResult } from '@/lib/sanitize';
-import { todayISO } from '@/lib/dates';
+import { apiRequest } from '@/lib/api';
 import type { QuizResultState } from '@/types/domain';
+
+interface QuizAttemptResponse extends QuizResultState {
+  isNewBest: boolean;
+}
 
 interface QuizState {
   result: QuizResultState;
-  /** Guarda un intento terminado y devuelve si es un nuevo récord. */
-  recordAttempt: (score: number) => boolean;
+  fetchResult: () => Promise<void>;
+  recordAttempt: (correctAnswers: number) => Promise<boolean>;
+  clearState: () => void;
 }
 
-/**
- * Resultado del mini quiz.
- *
- * Formato original: objeto JSON {best, attempts, lastScore, lastDate}.
- * Valores inválidos caen en los defaults sin escribir nada.
- */
-function loadInitialQuizResult(): QuizResultState {
-  return validateQuizResult(storageGet<unknown>(STORAGE_KEYS.quiz, null));
+const EMPTY_RESULT: QuizResultState = {
+  best: 0,
+  attempts: 0,
+  lastScore: null,
+  lastDate: null,
+};
+
+let requestVersion = 0;
+
+function fromApi(value: Omit<QuizAttemptResponse, 'isNewBest'>): QuizResultState {
+  return {
+    best: value.best * 20,
+    attempts: value.attempts,
+    lastScore: value.lastScore === null ? null : value.lastScore * 20,
+    lastDate: value.lastDate,
+  };
 }
 
-export const useQuizStore = create<QuizState>((set, get) => ({
-  result: loadInitialQuizResult(),
-  recordAttempt: (score) => {
-    const previous = get().result;
-    const previousBest = Number(previous.best) || 0;
-    const isNewBest = score > previousBest;
-    const result: QuizResultState = {
-      best: Math.max(previousBest, score),
-      attempts: (Number(previous.attempts) || 0) + 1,
-      lastScore: score,
-      lastDate: todayISO(),
-    };
-    storageSet(STORAGE_KEYS.quiz, result);
-    set({ result });
-    return isNewBest;
+export const useQuizStore = create<QuizState>((set) => ({
+  result: EMPTY_RESULT,
+  fetchResult: async () => {
+    const version = ++requestVersion;
+    const result = await apiRequest<Omit<QuizAttemptResponse, 'isNewBest'>>('/me/quiz-attempts');
+    if (version === requestVersion) set({ result: fromApi(result) });
+  },
+  recordAttempt: async (correctAnswers) => {
+    const version = requestVersion;
+    const result = await apiRequest<QuizAttemptResponse>('/me/quiz-attempts', {
+      body: { score: correctAnswers },
+    });
+    if (version === requestVersion) set({ result: fromApi(result) });
+    return result.isNewBest;
+  },
+  clearState: () => {
+    requestVersion += 1;
+    set({ result: EMPTY_RESULT });
   },
 }));

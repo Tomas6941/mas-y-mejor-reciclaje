@@ -24,7 +24,7 @@ export default function HomeSection() {
           <p className="mt-5 max-w-xl text-base leading-relaxed text-primary-foreground/85 sm:text-lg">Encontrá dónde reciclar, aprendé qué va en cada contenedor y registrá el impacto de tus hábitos.</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <button onClick={() => navigate('#/mapa')} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition-transform hover:-translate-y-0.5">Encontrar un punto <ArrowRight size={17} /></button>
-            <button onClick={() => navigate('#/guia')} className="inline-flex min-h-11 items-center rounded-full border border-white/35 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10">Cómo separar</button>
+            <button onClick={() => navigate('#/guia')} className="inline-flex min-h-11 items-center rounded-full border border-primary-foreground bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary shadow-soft transition-[transform,background-color,box-shadow] hover:-translate-y-0.5 hover:bg-primary-foreground/85 hover:shadow-lift">Cómo separar</button>
           </div>
         </div>
       </section>
@@ -61,7 +61,7 @@ export default function HomeSection() {
 }
 
 function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return <Card><CardContent className="flex items-center gap-4 p-5"><span className="grid size-11 place-items-center rounded-2xl bg-primary-soft text-primary">{icon}</span><div><p className="text-xs text-muted">{label}</p><p className="mt-1 font-display text-2xl font-bold tabular-nums">{value}</p></div></CardContent></Card>;
+  return <Card><CardContent className="flex h-full items-center justify-center gap-4 p-5 sm:p-6"><span className="grid size-11 place-items-center rounded-2xl bg-primary-soft text-primary">{icon}</span><div><p className="text-xs text-muted">{label}</p><p className="mt-1 font-display text-2xl font-bold tabular-nums">{value}</p></div></CardContent></Card>;
 }
 
 function ActionCard({ icon, title, description, action, onClick }: { icon: React.ReactNode; title: string; description: string; action: string; onClick: () => void }) {

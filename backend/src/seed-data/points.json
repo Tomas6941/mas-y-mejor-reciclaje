@@ -1,0 +1,234 @@
+[
+  {
+    "id": "pv-ciudad-universitaria",
+    "name": "Punto Verde Ciudad Universitaria",
+    "address": "Av. Haya de la Torre 500, Ciudad Universitaria",
+    "lat": -31.4352,
+    "lng": -64.191,
+    "type": "Punto verde",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "metal",
+      "electronicos",
+      "pilas"
+    ],
+    "status": "available",
+    "hours": "Lun a Sáb · 8 a 20 h"
+  },
+  {
+    "id": "c-plaza-san-martin",
+    "name": "Contenedor Plaza San Martín",
+    "address": "Independencia 200, Centro",
+    "lat": -31.4121,
+    "lng": -64.183,
+    "type": "Contenedor",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "metal"
+    ],
+    "status": "near-full",
+    "hours": "Acceso 24 h"
+  },
+  {
+    "id": "c-mercado-norte",
+    "name": "Contenedor Mercado Norte",
+    "address": "Av. Santiago del Estero 175, Centro",
+    "lat": -31.4114,
+    "lng": -64.1846,
+    "type": "Contenedor",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "organico"
+    ],
+    "status": "full",
+    "hours": "Acceso 24 h"
+  },
+  {
+    "id": "pv-parque-sarmiento",
+    "name": "Punto Verde Parque Sarmiento",
+    "address": "Av. Poeta Lugones 400, Parque Sarmiento",
+    "lat": -31.4253,
+    "lng": -64.1832,
+    "type": "Punto verde",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "metal"
+    ],
+    "status": "available",
+    "hours": "Lun a Dom · 7 a 21 h"
+  },
+  {
+    "id": "c-plaza-guemes",
+    "name": "Contenedor Plaza Güemes",
+    "address": "Av. Olmos 450, Güemes",
+    "lat": -31.4198,
+    "lng": -64.1894,
+    "type": "Contenedor",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "metal"
+    ],
+    "status": "damaged",
+    "hours": "Acceso 24 h"
+  },
+  {
+    "id": "pv-alberdi",
+    "name": "Punto Verde Alberdi",
+    "address": "Av. Colón 4800, Alberdi",
+    "lat": -31.4064,
+    "lng": -64.2155,
+    "type": "Punto verde",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "metal",
+      "electronicos",
+      "pilas"
+    ],
+    "status": "available",
+    "hours": "Lun a Sáb · 8 a 20 h"
+  },
+  {
+    "id": "c-alta-cordoba",
+    "name": "Contenedor Alta Córdoba",
+    "address": "Av. Jerónimo Luis de Cabrera 1400, Alta Córdoba",
+    "lat": -31.4008,
+    "lng": -64.2038,
+    "type": "Contenedor",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "metal"
+    ],
+    "status": "near-full",
+    "hours": "Acceso 24 h"
+  },
+  {
+    "id": "pv-cerro-de-las-rosas",
+    "name": "Punto Verde Cerro de las Rosas",
+    "address": "Av. Rafael Núñez 4200, Cerro de las Rosas",
+    "lat": -31.3803,
+    "lng": -64.2288,
+    "type": "Punto verde",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "metal",
+      "electronicos",
+      "pilas"
+    ],
+    "status": "available",
+    "hours": "Lun a Sáb · 9 a 19 h"
+  },
+  {
+    "id": "c-nueva-cordoba",
+    "name": "Contenedor Nueva Córdoba",
+    "address": "Bv. San Juan 350, Nueva Córdoba",
+    "lat": -31.425,
+    "lng": -64.1858,
+    "type": "Contenedor",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "metal"
+    ],
+    "status": "near-full",
+    "hours": "Acceso 24 h"
+  },
+  {
+    "id": "pv-jardin-botanico",
+    "name": "Punto Verde Jardín Botánico",
+    "address": "Francisco Yunyent 5491, Jardín Botánico",
+    "lat": -31.4166,
+    "lng": -64.2106,
+    "type": "Punto verde",
+    "materials": [
+      "papel",
+      "plastico",
+      "organico",
+      "electronicos",
+      "pilas"
+    ],
+    "status": "available",
+    "hours": "Mar a Dom · 9 a 18 h"
+  },
+  {
+    "id": "c-arguello",
+    "name": "Contenedor Argüello",
+    "address": "Av. Recta Martinoli 5500, Argüello",
+    "lat": -31.3649,
+    "lng": -64.2596,
+    "type": "Contenedor",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "metal"
+    ],
+    "status": "full",
+    "hours": "Acceso 24 h"
+  },
+  {
+    "id": "pv-villa-belgrano",
+    "name": "Punto Verde Villa Belgrano",
+    "address": "Av. Gauss 5500, Villa Belgrano",
+    "lat": -31.3861,
+    "lng": -64.2483,
+    "type": "Punto verde",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "electronicos"
+    ],
+    "status": "available",
+    "hours": "Lun a Sáb · 8 a 18 h"
+  },
+  {
+    "id": "c-san-vicente",
+    "name": "Contenedor San Vicente",
+    "address": "Av. San Vicente de Paul 1900, San Vicente",
+    "lat": -31.4118,
+    "lng": -64.2336,
+    "type": "Contenedor",
+    "materials": [
+      "papel",
+      "plastico",
+      "vidrio",
+      "metal"
+    ],
+    "status": "damaged",
+    "hours": "Acceso 24 h"
+  },
+  {
+    "id": "pv-general-paz",
+    "name": "Punto Verde General Paz",
+    "address": "Av. 24 de Septiembre 800, General Paz",
+    "lat": -31.3994,
+    "lng": -64.1763,
+    "type": "Punto verde",
+    "materials": [
+      "papel",
+      "plastico",
+      "organico",
+      "electronicos",
+      "pilas"
+    ],
+    "status": "available",
+    "hours": "Lun a Sáb · 8 a 20 h"
+  }
+]

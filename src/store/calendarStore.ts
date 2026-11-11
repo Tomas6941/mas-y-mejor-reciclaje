@@ -1,67 +1,83 @@
 import { create } from 'zustand';
 
-import { DEFAULT_NEIGHBORHOOD, NEIGHBORHOODS } from '@/data/neighborhoods';
-import { storageGet, storageSet, STORAGE_KEYS } from '@/lib/storage';
-import { validateNeighborhood, validateReminder } from '@/lib/sanitize';
-import type { Reminder } from '@/types/domain';
+import { DEFAULT_NEIGHBORHOOD } from '@/data/neighborhoods';
+import { apiRequest } from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
+import type { Reminder, Schedule } from '@/types/domain';
+
+export interface CalendarNeighborhood {
+  id: string;
+  name: string;
+}
 
 interface CalendarState {
   neighborhood: string;
+  neighborhoods: CalendarNeighborhood[];
+  schedules: Record<string, Schedule[]>;
   reminder: Reminder;
-  /** Cambia de barrio; si hay recordatorio activo, también lo actualiza. */
-  setNeighborhood: (neighborhood: string) => void;
-  /** Activa/desactiva el recordatorio del barrio actual. */
-  setReminder: (enabled: boolean) => void;
+  fetchNeighborhoods: () => Promise<void>;
+  fetchSchedules: (slug: string) => Promise<void>;
+  fetchPreference: () => Promise<void>;
+  setNeighborhood: (slug: string) => Promise<void>;
+  setReminder: (enabled: boolean) => Promise<void>;
+  clearAccountPreference: () => void;
 }
 
-/**
- * Barrio y recordatorio de recolección.
- *
- * neighborhood se guarda como string JSON con comillas (formato original);
- * reminder como objeto {enabled, neighborhood, createdAt}.
- */
-function loadInitialNeighborhood(): string {
-  const stored = storageGet<string | null>(STORAGE_KEYS.neighborhood, null);
-  if (typeof stored === 'string' && NEIGHBORHOODS[stored]) return stored;
-  storageSet(STORAGE_KEYS.neighborhood, DEFAULT_NEIGHBORHOOD);
-  return DEFAULT_NEIGHBORHOOD;
-}
-
-function loadInitialReminder(): Reminder {
-  return validateReminder(storageGet<unknown>(STORAGE_KEYS.reminder, null));
-}
+const EMPTY_REMINDER: Reminder = { enabled: false, neighborhood: null, createdAt: null };
+const DEFAULT_SLUG = toSlug(DEFAULT_NEIGHBORHOOD);
 
 export const useCalendarStore = create<CalendarState>((set, get) => ({
-  neighborhood: loadInitialNeighborhood(),
-  reminder: loadInitialReminder(),
-  setNeighborhood: (neighborhood) => {
-    if (!NEIGHBORHOODS[neighborhood]) return;
-    storageSet(STORAGE_KEYS.neighborhood, neighborhood);
-
-    let reminder = get().reminder;
-    if (reminder.enabled) {
-      reminder = { ...reminder, neighborhood };
-      storageSet(STORAGE_KEYS.reminder, reminder);
+  neighborhood: DEFAULT_SLUG,
+  neighborhoods: [],
+  schedules: {},
+  reminder: EMPTY_REMINDER,
+  fetchNeighborhoods: async () => {
+    if (get().neighborhoods.length > 0) return;
+    const neighborhoods = await apiRequest<CalendarNeighborhood[]>('/neighborhoods');
+    const selected = neighborhoods.some((item) => item.id === get().neighborhood)
+      ? get().neighborhood
+      : neighborhoods.find((item) => item.id === DEFAULT_SLUG)?.id ?? neighborhoods[0]?.id ?? DEFAULT_SLUG;
+    set({ neighborhoods, neighborhood: selected });
+  },
+  fetchSchedules: async (slug) => {
+    if (!slug || get().schedules[slug]) return;
+    const result = await apiRequest<{ neighborhood: string; schedules: Schedule[] }>(
+      `/neighborhoods/${encodeURIComponent(slug)}/schedules`,
+    );
+    set((state) => ({ schedules: { ...state.schedules, [slug]: result.schedules } }));
+  },
+  fetchPreference: async () => {
+    const result = await apiRequest<{ neighborhood: string | null; reminderEnabled: boolean }>('/me/preferences');
+    if (result.neighborhood) set({ neighborhood: result.neighborhood });
+    const neighborhood = get().neighborhoods.find((item) => item.id === (result.neighborhood ?? get().neighborhood))?.name ?? null;
+    set({ reminder: { enabled: result.reminderEnabled, neighborhood: result.reminderEnabled ? neighborhood : null, createdAt: null } });
+  },
+  setNeighborhood: async (slug) => {
+    if (!get().neighborhoods.some((item) => item.id === slug)) return;
+    set({ neighborhood: slug });
+    const user = useAuthStore.getState().user;
+    if (user?.emailVerifiedAt) {
+      await apiRequest('/me/preferences', { method: 'PATCH', body: { neighborhood: slug } });
     }
-    set({ neighborhood, reminder });
   },
-  setReminder: (enabled) => {
-    const reminder: Reminder = {
-      enabled,
-      neighborhood: enabled ? get().neighborhood : null,
-      createdAt: new Date().toISOString(),
-    };
-    storageSet(STORAGE_KEYS.reminder, reminder);
-    set({ reminder });
+  setReminder: async (enabled) => {
+    const neighborhood = get().neighborhoods.find((item) => item.id === get().neighborhood)?.name ?? null;
+    await apiRequest('/me/preferences', { method: 'PATCH', body: { reminderEnabled: enabled } });
+    set({
+      reminder: {
+        enabled,
+        neighborhood: enabled ? neighborhood : null,
+        createdAt: new Date().toISOString(),
+      },
+    });
   },
+  clearAccountPreference: () => set({ neighborhood: DEFAULT_SLUG, reminder: EMPTY_REMINDER }),
 }));
 
-/** Horarios del barrio seleccionado. */
-export function getSchedulesFor(neighborhood: string) {
-  return NEIGHBORHOODS[neighborhood] ?? [];
+export function getSchedulesFor(neighborhood: string): Schedule[] {
+  return useCalendarStore.getState().schedules[neighborhood] ?? [];
 }
 
-/** ¿El barrio guardado sigue siendo válido? (helper para migraciones) */
-export function isValidNeighborhood(value: unknown): value is string {
-  return validateNeighborhood(value) !== null;
+export function toSlug(value: string): string {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }

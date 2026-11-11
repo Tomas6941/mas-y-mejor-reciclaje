@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion';
+import { LogOut, ShieldCheck, UserRound } from 'lucide-react';
 
+import { AuthDialog } from '@/components/auth/AuthDialog';
 import { Button } from '@/components/ui/button';
 import { useWastePalette } from '@/components/ui/waste-palette';
 import { NAV_ITEMS } from '@/lib/routes';
 import { useHashRoute } from '@/hooks/useHashRoute';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/authStore';
 
 import { ThemeToggle } from './ThemeToggle';
 
@@ -45,6 +48,9 @@ function BrandMark() {
 export function Header() {
   const { route } = useHashRoute();
   const { openPalette } = useWastePalette();
+  const user = useAuthStore((state) => state.user);
+  const openAuthDialog = useAuthStore((state) => state.openAuthDialog);
+  const logout = useAuthStore((state) => state.logout);
 
   return (
     <motion.header
@@ -97,12 +103,32 @@ export function Header() {
               ¿Dónde va esto?
             </Button>
             <ThemeToggle />
+            {user?.role === 'admin' && (
+              <Button asChild variant="soft" size="sm" aria-current={route === 'admin' ? 'page' : undefined}>
+                <a href="#/admin" aria-label="Abrir panel de administración">
+                  <ShieldCheck aria-hidden="true" />
+                  <span className="hidden sm:inline">Admin</span>
+                </a>
+              </Button>
+            )}
+            {user ? (
+              <Button variant="outline" size="sm" onClick={() => void logout()} aria-label="Cerrar sesión">
+                <LogOut aria-hidden="true" />
+                <span className="hidden sm:inline">Salir</span>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => openAuthDialog('login')} aria-label="Iniciar sesión">
+                <UserRound aria-hidden="true" />
+                <span className="hidden sm:inline">Ingresar</span>
+              </Button>
+            )}
             <Button asChild variant="primary" size="sm" className="hidden lg:inline-flex">
               <a href="#/reportar">Reportar</a>
             </Button>
           </div>
         </div>
       </div>
+      <AuthDialog />
     </motion.header>
   );
 }

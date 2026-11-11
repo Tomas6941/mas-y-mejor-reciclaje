@@ -4,11 +4,12 @@ import {
   House,
   Map,
   Recycle,
+  ShieldCheck,
   TrendingUp,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 
-export type RouteKey = 'home' | 'map' | 'guide' | 'calendar' | 'tracking' | 'report';
+export type RouteKey = 'home' | 'map' | 'guide' | 'calendar' | 'tracking' | 'report' | 'admin';
 
 export interface NavItem {
   key: RouteKey;
@@ -49,6 +50,14 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Recycle,
     primary: false,
   },
+  {
+    key: 'admin',
+    hash: '#/admin',
+    label: 'Administración',
+    shortLabel: 'Admin',
+    icon: ShieldCheck,
+    primary: false,
+  },
 ];
 
 export const NAV_ITEM_MAP: Record<RouteKey, NavItem> = Object.fromEntries(
@@ -63,6 +72,7 @@ export const ROUTE_COMPONENTS: Record<RouteKey, () => Promise<{ default: Compone
   calendar: () => import('@/components/calendar/CalendarSection'),
   tracking: () => import('@/components/tracking/TrackingSection'),
   report: () => import('@/components/report/ReportSection'),
+  admin: () => import('@/components/admin/AdminSection'),
 };
 
 /** Parsea un hash tipo "#/mapa?material=papel" → { route, params }. */
@@ -82,6 +92,8 @@ export function parseHash(hash: string): { route: RouteKey; params: URLSearchPar
       return { route: 'tracking', params };
     case 'reportar':
       return { route: 'report', params };
+    case 'admin':
+      return { route: 'admin', params };
     default:
       return { route: 'home', params };
   }

@@ -1,8 +1,11 @@
 import { useMemo, useState } from 'react';
 import { CheckCircle2, RotateCcw, Trophy, XCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { AccountNotice } from '@/components/auth/AccountNotice';
 import { ALL_CATEGORY_KEYS, CATEGORIES } from '@/data/categories';
 import { QUIZ_BANK } from '@/data/quizBank';
 import { useQuizStore } from '@/store';
+import { useAuthStore } from '@/store/authStore';
 import type { WasteCategoryKey } from '@/types/domain';
 
 const QUESTIONS_PER_GAME = 5;
@@ -13,6 +16,7 @@ export function RecyclingQuiz() {
   const [answers, setAnswers] = useState<(WasteCategoryKey | null)[]>([]);
   const [finished, setFinished] = useState(false);
   const { result, recordAttempt } = useQuizStore();
+  const user = useAuthStore((state) => state.user);
   const currentQuestion = questions[answers.length];
   const score = useMemo(() => answers.reduce((total, answer, index) => total + (answer === questions[index]?.category ? 1 : 0), 0), [answers, questions]);
   const percentage = Math.round((score / QUESTIONS_PER_GAME) * 100);
@@ -24,7 +28,11 @@ export function RecyclingQuiz() {
     if (nextAnswers.length === QUESTIONS_PER_GAME) {
       setFinished(true);
       const correct = nextAnswers.filter((answer, index) => answer === questions[index].category).length;
-      recordAttempt(Math.round((correct / QUESTIONS_PER_GAME) * 100));
+      if (user?.emailVerifiedAt) {
+        void recordAttempt(correct).catch((error: unknown) => {
+          toast.error(error instanceof Error ? error.message : 'No pudimos guardar tu resultado.');
+        });
+      }
     }
   }
 
@@ -32,7 +40,8 @@ export function RecyclingQuiz() {
 
   return (
     <div className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-7">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted">5 preguntas · Elegí la categoría correcta</p><p className="text-xs text-muted">Récord: <strong className="text-foreground">{result.best}%</strong> · {result.attempts} {result.attempts === 1 ? 'intento' : 'intentos'}</p></div>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted">5 preguntas · Elegí la categoría correcta</p>{user?.emailVerifiedAt ? <p className="text-xs text-muted">Récord: <strong className="text-foreground">{result.best}%</strong> · {result.attempts} {result.attempts === 1 ? 'intento' : 'intentos'}</p> : <p className="text-xs text-muted">Iniciá sesión para guardar tu récord.</p>}</div>
+      {!user?.emailVerifiedAt && <div className="mb-5"><AccountNotice description="Iniciá sesión y confirmá tu correo para guardar tus resultados." /></div>}
       {!finished && currentQuestion ? <>
         <div className="mb-5 flex gap-1.5" aria-label={`Pregunta ${answers.length + 1} de ${QUESTIONS_PER_GAME}`}>{questions.map((question, index) => <span key={question.question} className={`h-1.5 flex-1 rounded-full ${index < answers.length ? 'bg-primary' : 'bg-border'}`} />)}</div>
         <p className="text-xs font-semibold uppercase tracking-widest text-primary">Pregunta {answers.length + 1} de {QUESTIONS_PER_GAME}</p><h3 className="mt-2 font-display text-xl font-semibold sm:text-2xl">{currentQuestion.question}</h3>

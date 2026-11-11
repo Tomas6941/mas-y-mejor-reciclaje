@@ -1,54 +1,37 @@
 import { create } from 'zustand';
 
-import { createSeedReports } from '@/data/seed';
-import { REPORT_TO_STATUS } from '@/data/materials';
-import { loadArraySeed, storageSet, STORAGE_KEYS } from '@/lib/storage';
-import { sanitizeReports } from '@/lib/sanitize';
-import { makeId } from '@/lib/utils';
-import { usePointsStore } from '@/store/pointsStore';
+import { apiRequest } from '@/lib/api';
 import type { RecyclePoint, Report, ReportType } from '@/types/domain';
 
 interface ReportsState {
   reports: Report[];
-  /**
-   * Agrega un reporte al inicio de la lista, actualiza el estado del punto y
-   * persiste ambas claves (points y reports), igual que el sitio original.
-   */
-  addReport: (input: { point: RecyclePoint; type: ReportType; comment: string }) => Report;
+  loading: boolean;
+  fetchReports: () => Promise<void>;
+  addReport: (input: { point: RecyclePoint; type: ReportType; comment: string }) => Promise<Report>;
+  clearState: () => void;
 }
 
-/**
- * Reportes de la comunidad.
- *
- * Formato original: array JSON plano en ecopunto.reports.v1. Si la persona
- * borró sus datos, la lista queda vacía (no se vuelve a sembrar).
- */
-export const useReportsStore = create<ReportsState>((set, get) => ({
-  reports: loadArraySeed(
-    STORAGE_KEYS.reports,
-    createSeedReports,
-    (data) => sanitizeReports(data) ?? [],
-  ),
-  addReport: ({ point, type, comment }) => {
-    const report: Report = {
-      id: makeId('report'),
-      pointId: point.id,
-      pointName: point.name,
-      type,
-      comment: comment.slice(0, 180),
-      timestamp: new Date().toISOString(),
-    };
-
-    const updated = [report, ...get().reports];
-    storageSet(STORAGE_KEYS.reports, updated);
-    set({ reports: updated });
-
-    usePointsStore.getState().setPointStatus(point.id, REPORT_TO_STATUS[type]);
-    return report;
+export const useReportsStore = create<ReportsState>((set) => ({
+  reports: [],
+  loading: false,
+  fetchReports: async () => {
+    set({ loading: true });
+    try {
+      const reports = await apiRequest<Report[]>('/reports?limit=20');
+      set({ reports });
+    } finally {
+      set({ loading: false });
+    }
   },
+  addReport: async ({ point, type, comment }) => {
+    const created = await apiRequest<Omit<Report, 'pointName'>>('/reports', {
+      body: { pointId: point.id, type, comment: comment.slice(0, 180) },
+    });
+    return { ...created, pointName: point.name };
+  },
+  clearState: () => set({ reports: [], loading: false }),
 }));
 
-/** Reportes ordenados del más reciente al más viejo (ya vienen así). */
 export function getSortedReports(reports: Report[]): Report[] {
   return reports.slice().sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),

@@ -1,45 +1,46 @@
 import { create } from 'zustand';
 
-import { createSeedRecords } from '@/data/seed';
-import { loadArraySeed, storageSet, STORAGE_KEYS } from '@/lib/storage';
-import { sanitizeRecords } from '@/lib/sanitize';
-import { makeId } from '@/lib/utils';
+import { apiRequest } from '@/lib/api';
 import type { MaterialKey, TrackingRecord } from '@/types/domain';
 
 interface TrackingState {
   records: TrackingRecord[];
-  /** Agrega un registro y lo persiste. */
-  addRecord: (input: { material: MaterialKey; kg: number; date: string }) => TrackingRecord;
-  /** Borra todos los registros (queda persistido el array vacío). */
-  clearAll: () => void;
+  loading: boolean;
+  fetchRecords: () => Promise<void>;
+  addRecord: (input: { material: MaterialKey; kg: number; date: string }) => Promise<TrackingRecord>;
+  clearAll: () => Promise<void>;
+  clearState: () => void;
 }
 
-/**
- * Registros de seguimiento.
- *
- * Formato original: array JSON plano en ecopunto.records.v1. Si la persona
- * los borró, la lista queda vacía (no se vuelve a sembrar).
- */
+let requestVersion = 0;
+
 export const useTrackingStore = create<TrackingState>((set, get) => ({
-  records: loadArraySeed(
-    STORAGE_KEYS.records,
-    createSeedRecords,
-    (data) => sanitizeRecords(data) ?? [],
-  ),
-  addRecord: ({ material, kg, date }) => {
-    const record: TrackingRecord = {
-      id: makeId('record'),
-      material,
-      kg: Math.round(kg * 100) / 100,
-      date,
-    };
-    const updated = [...get().records, record];
-    storageSet(STORAGE_KEYS.records, updated);
-    set({ records: updated });
+  records: [],
+  loading: false,
+  fetchRecords: async () => {
+    const version = ++requestVersion;
+    set({ loading: true });
+    try {
+      const result = await apiRequest<TrackingRecord[]>('/me/tracking');
+      if (version === requestVersion) set({ records: result });
+    } finally {
+      if (version === requestVersion) set({ loading: false });
+    }
+  },
+  addRecord: async ({ material, kg, date }) => {
+    const version = requestVersion;
+    const record = await apiRequest<TrackingRecord>('/me/tracking', {
+      body: { material, kg, date },
+    });
+    if (version === requestVersion) set({ records: [...get().records, record] });
     return record;
   },
-  clearAll: () => {
-    storageSet(STORAGE_KEYS.records, []);
+  clearAll: async () => {
+    await apiRequest<{ deletedCount: number }>('/me/tracking', { method: 'DELETE' });
     set({ records: [] });
+  },
+  clearState: () => {
+    requestVersion += 1;
+    set({ records: [], loading: false });
   },
 }));

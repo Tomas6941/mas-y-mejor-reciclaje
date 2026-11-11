@@ -6,3 +6,5 @@ dist-ssr
 .DS_Store
 coverage
 *.tsbuildinfo
+backend/.env
+backend/dist/
