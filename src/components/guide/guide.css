@@ -1,0 +1,18 @@
+.guide-filter {
+  min-height: 40px;
+  flex: 0 0 auto;
+  border: 1px solid rgb(var(--border));
+  border-radius: 9999px;
+  padding: 0 15px;
+  color: rgb(var(--muted));
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.guide-filter:hover { border-color: rgb(var(--primary)); color: rgb(var(--foreground)); }
+.guide-filter-active {
+  border-color: rgb(var(--primary));
+  background: rgb(var(--primary));
+  color: rgb(var(--primary-foreground));
+}
+.guide-search-panel input::placeholder { color: rgb(var(--muted)); }
