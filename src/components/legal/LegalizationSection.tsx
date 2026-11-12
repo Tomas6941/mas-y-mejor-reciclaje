@@ -136,10 +136,10 @@ export default function LegalizationSection() {
   const document = DOCUMENTS.find((item) => item.slug === slug);
 
   return (
-    <main className="container-page space-y-8 pb-16 pt-28">
+    <section aria-labelledby="legal-page-title" className="container-page space-y-8 pb-16 pt-28">
       <header className="max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-wider text-primary">Mas y mejor reciclaje</p>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl">{document?.title ?? 'Información legal'}</h1>
+        <h1 id="legal-page-title" className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl">{document?.title ?? 'Información legal'}</h1>
         <p className="mt-3 text-muted">{document?.summary ?? 'Políticas y condiciones del servicio.'}</p>
       </header>
 
@@ -185,6 +185,6 @@ export default function LegalizationSection() {
           </aside>
         </div>
       )}
-    </main>
+    </section>
   );
 }
