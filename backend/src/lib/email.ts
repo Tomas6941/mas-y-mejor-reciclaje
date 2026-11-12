@@ -58,7 +58,7 @@ export function createAccountEmail(
 ): Pick<EmailMessage, 'subject' | 'text' | 'html'> {
   const isVerification = kind === 'verification';
   const action = isVerification ? 'confirmar tu correo' : 'cambiar tu contraseña';
-  const subject = isVerification ? 'Confirmá tu correo en EcoPunto' : 'Restablecé tu contraseña de EcoPunto';
+  const subject = isVerification ? 'Confirmá tu correo en Mas y mejor reciclaje' : 'Restablecé tu contraseña de Mas y mejor reciclaje';
   const safeLink = escapeHtml(link);
 
   return {
