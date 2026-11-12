@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { REPORT_COMMENT_MAX, TRACKING_KG_MAX } from '@/data/constants';
+import { TRACKING_KG_MAX } from '@/data/constants';
 import { isoToDate, todayISO } from '@/lib/dates';
 
 import type { MaterialKey, ReportType } from '@/types/domain';
@@ -8,11 +8,29 @@ import type { MaterialKey, ReportType } from '@/types/domain';
 /** ----- Formulario de reporte ----- */
 
 export const reportSchema = z.object({
-  pointId: z.string().min(1, 'Elegí el punto o contenedor que querés reportar.'),
-  type: z.enum(['full', 'damaged', 'available'], {
-    errorMap: () => ({ message: 'Seleccioná cómo está el contenedor.' }),
-  }),
-  comment: z.string().trim().max(REPORT_COMMENT_MAX).optional().default(''),
+  category: z.enum(['container_status', 'suggestion']),
+  pointId: z.string().optional().default(''),
+  type: z.enum(['full', 'damaged', 'available', 'move_point', 'add_point', 'remove_point']),
+  comment: z.string().trim().max(500).optional().default(''),
+  suggestedLocation: z.string().trim().max(240).optional().default(''),
+  imageData: z.string().max(2_800_000).optional(),
+}).superRefine((value, context) => {
+  const statusType = ['full', 'damaged', 'available'].includes(value.type);
+  if (value.category === 'container_status' && (!value.pointId || !statusType)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['pointId'], message: 'Elegí un punto y su estado.' });
+  }
+  if (value.category === 'suggestion' && statusType) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['type'], message: 'Elegí una sugerencia válida.' });
+  }
+  if (value.category === 'suggestion' && value.type !== 'add_point' && !value.pointId) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['pointId'], message: 'Elegí el punto relacionado.' });
+  }
+  if (value.category === 'suggestion' && value.type === 'add_point' && value.suggestedLocation.trim().length < 4) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['suggestedLocation'], message: 'Indicá dónde sugerís instalarlo.' });
+  }
+  if (value.imageData && !/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(value.imageData)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['imageData'], message: 'La imagen debe ser JPG.' });
+  }
 });
 
 export type ReportFormValues = z.infer<typeof reportSchema>;

@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 
 import { apiRequest } from '@/lib/api';
-import type { RecyclePoint, Report, ReportType } from '@/types/domain';
+import type { RecyclePoint, Report, ReportCategory, ReportType } from '@/types/domain';
 
 interface ReportsState {
   reports: Report[];
   loading: boolean;
   fetchReports: () => Promise<void>;
-  addReport: (input: { point: RecyclePoint; type: ReportType; comment: string }) => Promise<Report>;
+  addReport: (input: { point: RecyclePoint | null; category: ReportCategory; type: ReportType; comment: string; suggestedLocation: string; imageData?: string }) => Promise<Report>;
   clearState: () => void;
 }
 
@@ -23,11 +23,11 @@ export const useReportsStore = create<ReportsState>((set) => ({
       set({ loading: false });
     }
   },
-  addReport: async ({ point, type, comment }) => {
-    const created = await apiRequest<Omit<Report, 'pointName'>>('/reports', {
-      body: { pointId: point.id, type, comment: comment.slice(0, 180) },
+  addReport: async ({ point, category, type, comment, suggestedLocation, imageData }) => {
+    const created = await apiRequest<Omit<Report, 'pointName'> & { pointName?: string | null }>('/reports', {
+      body: { pointId: point?.id ?? '', category, type, comment, suggestedLocation, imageData },
     });
-    return { ...created, pointName: point.name };
+    return { ...created, pointName: point?.name ?? null };
   },
   clearState: () => set({ reports: [], loading: false }),
 }));

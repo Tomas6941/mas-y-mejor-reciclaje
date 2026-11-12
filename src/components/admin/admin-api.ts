@@ -1,15 +1,18 @@
 import { apiRequest } from '@/lib/api';
-import type { RecyclePoint, ReportType, Schedule } from '@/types/domain';
+import type { RecyclePoint, ReportCategory, ReportType, Schedule } from '@/types/domain';
 
 export type AdminReportStatus = 'pending' | 'approved' | 'rejected';
 
 export interface AdminReport {
   id: string;
   pointId: string;
-  pointName: string;
+  pointName: string | null;
   authorId: string;
+  category: ReportCategory;
   type: ReportType;
   comment: string;
+  suggestedLocation: string | null;
+  hasImage: boolean;
   status: AdminReportStatus;
   timestamp: string;
 }
@@ -51,6 +54,10 @@ export function reviewAdminReport(id: string, decision: 'approved' | 'rejected')
   return apiRequest<{ id: string; status: AdminReportStatus }>(`/admin/reports/${encodeURIComponent(id)}`, {
     method: 'PATCH', body: { decision },
   });
+}
+
+export function fetchAdminReportImage(id: string): Promise<{ imageData: string }> {
+  return apiRequest(`/admin/reports/${encodeURIComponent(id)}/image`);
 }
 
 export function fetchAdminPoints(): Promise<RecyclePoint[]> {

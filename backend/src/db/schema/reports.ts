@@ -1,10 +1,13 @@
-import { relations } from 'drizzle-orm';
-import { index, jsonb, pgEnum, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { relations, sql } from 'drizzle-orm';
+import { check, index, jsonb, pgEnum, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 
 import { points } from './points.js';
 import { users } from './users.js';
 
-export const reportTypeEnum = pgEnum('report_type', ['full', 'damaged', 'available']);
+export const reportCategoryEnum = pgEnum('report_category', ['container_status', 'suggestion']);
+export const reportTypeEnum = pgEnum('report_type', [
+  'full', 'damaged', 'available', 'move_point', 'add_point', 'remove_point',
+]);
 export const reportReviewStatusEnum = pgEnum('report_review_status', [
   'pending',
   'approved',
@@ -15,16 +18,24 @@ export const reports = pgTable(
   'reports',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    pointId: uuid('point_id').notNull().references(() => points.id, { onDelete: 'cascade' }),
+    pointId: uuid('point_id').references(() => points.id, { onDelete: 'set null' }),
     authorId: uuid('author_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
+    category: reportCategoryEnum('category').notNull().default('container_status'),
     type: reportTypeEnum('type').notNull(),
-    comment: varchar('comment', { length: 180 }).notNull().default(''),
+    comment: varchar('comment', { length: 500 }).notNull().default(''),
+    suggestedLocation: varchar('suggested_location', { length: 240 }),
+    imageData: text('image_data'),
     status: reportReviewStatusEnum('status').notNull().default('pending'),
     reviewerId: uuid('reviewer_id').references(() => users.id, { onDelete: 'set null' }),
     reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
+    check('reports_category_type_consistency', sql`(
+      (${table.category} = 'container_status' and ${table.type} in ('full', 'damaged', 'available') and ${table.pointId} is not null)
+      or (${table.category} = 'suggestion' and ${table.type} = 'add_point' and ${table.pointId} is null)
+      or (${table.category} = 'suggestion' and ${table.type} in ('move_point', 'remove_point') and ${table.pointId} is not null)
+    )`),
     index('reports_status_created_idx').on(table.status, table.createdAt),
     index('reports_point_created_idx').on(table.pointId, table.createdAt),
     index('reports_author_created_idx').on(table.authorId, table.createdAt),
