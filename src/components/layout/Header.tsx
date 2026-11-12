@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { LogOut, ShieldCheck, UserRound } from 'lucide-react';
+import { LogOut, Recycle, ShieldCheck, UserRound } from 'lucide-react';
 
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { Button } from '@/components/ui/button';
@@ -65,7 +65,7 @@ export function Header() {
 
           <nav aria-label="Navegación principal" className="hidden min-w-0 flex-1 lg:block">
             <ul className="flex items-center justify-center gap-0 whitespace-nowrap xl:gap-1">
-              {NAV_ITEMS.filter((item) => item.primary || item.key === 'report').map((item) => {
+              {NAV_ITEMS.filter((item) => item.primary).map((item) => {
                 const isActive = route === item.key;
                 return (
                   <li key={item.key}>
@@ -94,10 +94,22 @@ export function Header() {
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Button
+              asChild
+              variant="accent"
+              size="sm"
+              aria-current={route === 'report' ? 'page' : undefined}
+              className="hidden gap-1.5 font-semibold lg:inline-flex"
+            >
+              <a href="#/reportar" aria-label="Reportar un punto de reciclaje">
+                <Recycle aria-hidden="true" />
+                <span>Reportar</span>
+              </a>
+            </Button>
+            <Button
               variant="accent"
               size="sm"
               onClick={() => openPalette()}
-              className="hidden gap-2 font-semibold xl:inline-flex"
+              className="hidden gap-2 font-semibold 2xl:inline-flex"
               aria-label="Buscar a qué contenedor va un residuo (Ctrl más K)"
             >
               ¿Dónde va esto?
