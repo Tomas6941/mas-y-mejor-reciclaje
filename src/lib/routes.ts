@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 
-export type RouteKey = 'home' | 'map' | 'guide' | 'calendar' | 'tracking' | 'report' | 'admin';
+export type RouteKey = 'home' | 'map' | 'guide' | 'calendar' | 'tracking' | 'report' | 'admin' | 'legal';
 
 export interface NavItem {
   key: RouteKey;
@@ -58,6 +58,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: ShieldCheck,
     primary: false,
   },
+  { key: 'legal', hash: '#/legalizacion', label: 'Información legal', shortLabel: 'Legal', icon: ShieldCheck, primary: false },
 ];
 
 export const NAV_ITEM_MAP: Record<RouteKey, NavItem> = Object.fromEntries(
@@ -73,6 +74,7 @@ export const ROUTE_COMPONENTS: Record<RouteKey, () => Promise<{ default: Compone
   tracking: () => import('@/components/tracking/TrackingSection'),
   report: () => import('@/components/report/ReportSection'),
   admin: () => import('@/components/admin/AdminSection'),
+  legal: () => import('@/components/legal/LegalizationSection'),
 };
 
 /** Parsea un hash tipo "#/mapa?material=papel" → { route, params }. */
@@ -80,6 +82,12 @@ export function parseHash(hash: string): { route: RouteKey; params: URLSearchPar
   const clean = hash.replace(/^#\/?/, '');
   const [path, query] = clean.split('?');
   const params = new URLSearchParams(query ?? '');
+
+  if (path === 'legalizacion' || path.startsWith('legalizacion/')) {
+    const documentSlug = path.split('/')[1];
+    if (documentSlug) params.set('legalDoc', documentSlug);
+    return { route: 'legal', params };
+  }
 
   switch (path) {
     case 'mapa':
