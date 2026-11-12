@@ -8,3 +8,4 @@ coverage
 *.tsbuildinfo
 backend/.env
 backend/dist/
+.vercel

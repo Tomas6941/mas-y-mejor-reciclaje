@@ -4,6 +4,9 @@
   "version": "2.0.0",
   "type": "module",
   "description": "EcoPunto: encontrá puntos de reciclaje en Córdoba, aprendé a separar tus residuos, consultá horarios y seguí tu impacto ambiental.",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

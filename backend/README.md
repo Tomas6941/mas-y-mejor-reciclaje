@@ -16,6 +16,20 @@ Servicio Node.js independiente del frontend Vite. Requiere Node.js 24 o superior
 
 Para email, configurá una cuenta Google dedicada con verificación en dos pasos y una Contraseña de Aplicación. Guardá el secreto en el entorno del servicio y nunca en Git. `PUBLIC_APP_URL` es el origen público usado en los enlaces de cuenta.
 
+## Despliegue en Vercel
+
+El repositorio se despliega desde su raíz. `vercel.json` instala las dependencias del frontend y `backend`, compila ambos y publica `api/v1/[...path].js` como función Node.js. La función reutiliza Fastify y su pool durante la vida de una instancia; no inicia un puerto HTTP. El runtime se fija a Node.js 24 mediante `engines` en el `package.json` raíz.
+
+En las configuraciones de **Preview** y **Production** del proyecto Vercel agregá estas variables, sin comillas:
+
+- `DATABASE_URL`: URL pooled de Neon.
+- `SESSION_SECRET`: secreto aleatorio de al menos 32 caracteres.
+- `SMTP_HOST`, `SMTP_PORT` (`587`), `SMTP_USER`, `SMTP_PASS` y `SMTP_FROM`.
+- `WEB_ORIGIN`: origen exacto del sitio desplegado para CORS y validación de solicitudes con cambios. En Preview puede usarse el dominio estable del proyecto para la rama `development`.
+- `PUBLIC_APP_URL`: origen usado en enlaces enviados por email.
+
+Luego de guardar variables hay que crear un nuevo deployment. Revisá `GET /api/v1/health` y `GET /api/v1/health/ready`; el primero confirma que la función ejecuta y el segundo que Neon responde. En Vercel, elegí la carpeta raíz del repo como **Root Directory** y habilitá el deployment de la rama `development` o la rama de producción elegida.
+
 ## Seguridad de operación
 
 - No compartas URLs de Neon, contraseñas SMTP, secretos de sesión ni enlaces de verificación.

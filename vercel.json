@@ -1,0 +1,9 @@
+{
+  "installCommand": "npm ci && npm ci --prefix backend",
+  "buildCommand": "npm run build && npm --prefix backend run build",
+  "functions": {
+    "api/v1/[...path].js": {
+      "maxDuration": 30
+    }
+  }
+}
