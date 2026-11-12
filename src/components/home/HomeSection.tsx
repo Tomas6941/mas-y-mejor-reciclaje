@@ -16,16 +16,65 @@ export default function HomeSection() {
 
   return (
     <div className="container-page space-y-12 pb-16 pt-28 sm:space-y-16">
-      <section className="relative overflow-hidden rounded-hero bg-primary px-6 py-12 text-primary-foreground shadow-soft sm:px-10 sm:py-16 lg:px-14">
-        <div className="pointer-events-none absolute -right-16 -top-24 size-72 rounded-full bg-white/10 blur-3xl" />
-        <div className="relative max-w-3xl">
-          <span className="inline-flex rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold tracking-wide">RECICLÁ EN CÓRDOBA</span>
-          <h1 className="mt-6 font-display text-4xl font-bold leading-tight tracking-tight sm:text-6xl">Separar mejor empieza <span className="text-accent">acá.</span></h1>
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-primary-foreground/85 sm:text-lg">Encontrá dónde reciclar, aprendé qué va en cada contenedor y registrá el impacto de tus hábitos.</p>
+      <section className="relative isolate min-h-[560px] overflow-hidden rounded-[2rem] bg-[#073c2c] px-6 py-12 text-white shadow-soft sm:min-h-[600px] sm:px-10 sm:py-16 lg:flex lg:items-center lg:px-14">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -right-24 -top-32 size-[30rem] rounded-full bg-emerald-400/10 blur-3xl" />
+          <div className="absolute -bottom-52 left-1/4 size-[34rem] rounded-full bg-green-400/10 blur-3xl" />
+          <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(#b7efae 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+        </div>
+        <div className="relative z-10 max-w-2xl lg:w-[54%]">
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/25 bg-white/5 px-3.5 py-1.5 text-xs font-semibold tracking-[0.16em] text-emerald-100">
+            <Recycle size={14} aria-hidden="true" /> ECO PUNTO · CÓRDOBA
+          </span>
+          <h1 className="mt-6 max-w-2xl font-display text-[2.8rem] font-bold leading-[0.98] tracking-tight sm:text-6xl lg:text-[4.5rem]">
+            Reciclar en <span className="text-[#91e176]">Córdoba</span> nunca fue tan fácil
+          </h1>
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-emerald-50/75 sm:text-lg">
+            Encontrá puntos verdes, descubrí dónde reciclar y empezá a transformar tu ciudad.
+          </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <button onClick={() => navigate('#/mapa')} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition-transform hover:-translate-y-0.5">Encontrar un punto <ArrowRight size={17} /></button>
-            <button onClick={() => navigate('#/guia')} className="inline-flex min-h-11 items-center rounded-full border border-primary-foreground bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary shadow-soft transition-[transform,background-color,box-shadow] hover:-translate-y-0.5 hover:bg-primary-foreground/85 hover:shadow-lift">Cómo separar</button>
+            <button onClick={() => navigate('#/mapa')} className="inline-flex min-h-12 items-center gap-2.5 rounded-full bg-[#63c957] px-6 py-3 text-sm font-bold text-[#073c2c] shadow-lg shadow-green-950/20 transition-transform hover:-translate-y-0.5 sm:text-base">
+              <MapPin size={19} aria-hidden="true" /> Encontrar puntos verdes <ArrowRight size={18} aria-hidden="true" />
+            </button>
+            <button onClick={() => navigate('#/guia')} className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/70 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10 sm:text-base">
+              <Recycle size={18} aria-hidden="true" /> Cómo reciclar
+            </button>
           </div>
+        </div>
+        <div aria-hidden="true" className="pointer-events-none relative mx-auto mt-8 w-full max-w-[590px] lg:absolute lg:inset-y-0 lg:right-0 lg:mt-0 lg:w-[55%] lg:max-w-none">
+          <svg viewBox="0 0 650 500" className="h-auto w-full drop-shadow-2xl lg:absolute lg:bottom-0 lg:right-[-2%] lg:h-full lg:w-auto lg:max-w-none" role="presentation">
+            <defs>
+              <linearGradient id="hero-sky" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#a9e2d8" /><stop offset="1" stopColor="#e4f0c5" /></linearGradient>
+              <linearGradient id="hero-hill" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#48a94e" /><stop offset="1" stopColor="#155c39" /></linearGradient>
+            </defs>
+            <circle cx="390" cy="240" r="205" fill="#40a85c" opacity=".22" />
+            <circle cx="405" cy="230" r="170" fill="url(#hero-sky)" />
+            <path d="M255 323h300v115H255z" fill="#789c77" opacity=".75" />
+            <path d="M278 274h64v117h-64zm79-42h77v159h-77zm94 28h83v131h-83z" fill="#7d9aa1" />
+            <path d="M292 293h13v19h-13zm27 0h13v19h-13zm33-37h16v19h-16zm30 0h16v19h-16zm30 0h16v19h-16zm-30 35h16v19h-16zm30 0h16v19h-16zm45 1h16v19h-16zm31 0h16v19h-16z" fill="#d5e5d8" />
+            <path d="M323 347h185v52H323z" fill="#d5b994" />
+            <path d="M335 347V224h26v-24l25-22 25 22v24h25V181l27-27 28 27v166z" fill="#ead7b6" />
+            <path d="M329 224h68v123h-68zm101-43h69v166h-69z" fill="#f4e4c7" />
+            <path d="M335 220h57v10h-57zm101-42h59v10h-59z" fill="#c4a57e" />
+            <path d="M348 200h8v-24l13-12 13 12v24m70-24h8v-28l13-13 13 13v28" fill="#d8c09d" />
+            <path d="M352 250a10 10 0 0 1 20 0v28h-20zm27 0a10 10 0 0 1 20 0v28h-20zm57-11a11 11 0 0 1 22 0v31h-22zm31 0a11 11 0 0 1 22 0v31h-22z" fill="#97795b" />
+            <path d="M398 347v-40a18 18 0 0 1 36 0v40z" fill="#987a5b" />
+            <circle cx="490" cy="111" r="49" fill="#9bd96c" opacity=".86" />
+            <path d="M469 128c12-29 35-43 58-44-8 24-28 42-58 44zm15 8c-7-23-1-43 13-59 8 23 4 43-13 59z" fill="#328a49" />
+            <path d="M54 382c36-63 118-85 187-48 47-61 132-62 181-15 62-40 132-17 162 45v92H54z" fill="url(#hero-hill)" />
+            <path d="M0 440c90-53 169-50 244 0 95-55 193-43 277 0 44-27 90-30 129-11v71H0z" fill="#1b7545" />
+            <path d="M28 442c48-52 92-58 134-40-25 5-42 18-54 39 26-19 56-21 88-7-36 9-62 29-82 60H35zm501-35c39-43 78-49 118-27-24 4-41 16-53 36 27-16 54-17 81-3-33 7-56 26-72 54h-69z" fill="#61b84c" />
+            <path d="M62 443h530" stroke="#b5ce83" strokeWidth="9" strokeLinecap="round" />
+            <g transform="translate(292 330)">
+              <path d="M0 24h92l-7 116H8z" fill="#34a843" /><path d="M-4 18h100v18H-4z" rx="8" fill="#52c34e" /><path d="M15 7h70l8 11H7z" fill="#268d39" /><rect x="18" y="52" width="56" height="4" rx="2" fill="#8be47b" opacity=".7" /><text x="46" y="94" fill="white" fontSize="31" textAnchor="middle">↻</text><text x="46" y="115" fill="white" fontSize="10" fontWeight="700" textAnchor="middle">PLÁSTICO</text>
+            </g>
+            <g transform="translate(391 326)">
+              <path d="M0 24h92l-7 116H8z" fill="#2379c5" /><path d="M-4 18h100v18H-4z" fill="#3895e4" /><path d="M15 7h70l8 11H7z" fill="#1764a6" /><rect x="18" y="52" width="56" height="4" rx="2" fill="#9dd5ff" opacity=".65" /><text x="46" y="94" fill="white" fontSize="31" textAnchor="middle">↻</text><text x="46" y="115" fill="white" fontSize="10" fontWeight="700" textAnchor="middle">PAPEL</text>
+            </g>
+            <g transform="translate(490 330)">
+              <path d="M0 24h92l-7 116H8z" fill="#8b6546" /><path d="M-4 18h100v18H-4z" fill="#a47b58" /><path d="M15 7h70l8 11H7z" fill="#765338" /><rect x="18" y="52" width="56" height="4" rx="2" fill="#e6c6a4" opacity=".65" /><text x="46" y="94" fill="white" fontSize="31" textAnchor="middle">↻</text><text x="46" y="115" fill="white" fontSize="10" fontWeight="700" textAnchor="middle">VIDRIO</text>
+            </g>
+          </svg>
         </div>
       </section>
 
