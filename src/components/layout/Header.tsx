@@ -39,7 +39,7 @@ function BrandMark() {
           />
         </svg>
       </span>
-      <span className="whitespace-nowrap font-display text-xs font-bold leading-tight tracking-tight sm:text-base">Mas y mejor reciclaje</span>
+      <span className="hidden whitespace-nowrap font-display text-xs font-bold leading-tight tracking-tight xl:inline sm:text-base">Mas y mejor reciclaje</span>
     </a>
   );
 }
@@ -60,12 +60,12 @@ export function Header() {
       className="fixed inset-x-0 top-0 z-40"
     >
       <div className="container-page pt-3 sm:pt-4">
-        <div className="glass flex h-14 items-center justify-between gap-3 rounded-full pl-4 pr-2 shadow-soft sm:h-16 sm:pl-5">
+        <div className="glass flex h-14 items-center justify-between gap-2 rounded-full pl-3 pr-2 shadow-soft sm:h-16 sm:gap-3 sm:pl-5">
           <BrandMark />
 
-          <nav aria-label="Navegación principal" className="hidden lg:block">
-            <ul className="flex items-center gap-1">
-              {NAV_ITEMS.filter((item) => item.primary).map((item) => {
+          <nav aria-label="Navegación principal" className="hidden min-w-0 flex-1 lg:block">
+            <ul className="flex items-center justify-center gap-0 whitespace-nowrap xl:gap-1">
+              {NAV_ITEMS.filter((item) => item.primary || item.key === 'report').map((item) => {
                 const isActive = route === item.key;
                 return (
                   <li key={item.key}>
@@ -73,7 +73,7 @@ export function Header() {
                       href={item.hash}
                       aria-current={isActive ? 'page' : undefined}
                       className={cn(
-                        'relative rounded-full px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                        'relative rounded-full px-2 py-2 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary xl:px-3 xl:text-sm',
                         isActive ? 'text-foreground' : 'text-muted hover:text-foreground',
                       )}
                     >
@@ -92,12 +92,12 @@ export function Header() {
             </ul>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Button
               variant="accent"
               size="sm"
               onClick={() => openPalette()}
-              className="hidden gap-2 font-semibold sm:inline-flex"
+              className="hidden gap-2 font-semibold xl:inline-flex"
               aria-label="Buscar a qué contenedor va un residuo (Ctrl más K)"
             >
               ¿Dónde va esto?
@@ -107,24 +107,21 @@ export function Header() {
               <Button asChild variant="soft" size="sm" aria-current={route === 'admin' ? 'page' : undefined}>
                 <a href="#/admin" aria-label="Abrir panel de administración">
                   <ShieldCheck aria-hidden="true" />
-                  <span className="hidden sm:inline">Admin</span>
+                  <span className="hidden xl:inline">Admin</span>
                 </a>
               </Button>
             )}
             {user ? (
               <Button variant="outline" size="sm" onClick={() => void logout()} aria-label="Cerrar sesión">
                 <LogOut aria-hidden="true" />
-                <span className="hidden sm:inline">Salir</span>
+                <span className="hidden xl:inline">Salir</span>
               </Button>
             ) : (
               <Button variant="outline" size="sm" onClick={() => openAuthDialog('login')} aria-label="Iniciar sesión">
                 <UserRound aria-hidden="true" />
-                <span className="hidden sm:inline">Ingresar</span>
+                <span className="hidden xl:inline">Ingresar</span>
               </Button>
             )}
-            <Button asChild variant="primary" size="sm" className="hidden lg:inline-flex">
-              <a href="#/reportar">Reportar</a>
-            </Button>
           </div>
         </div>
       </div>
