@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ArrowRight, BadgeCheck, CalendarDays, Clock3, Leaf, Recycle, ShieldCheck, Trophy, UserRound } from 'lucide-react';
+import { ArrowRight, BadgeCheck, CalendarDays, Clock3, Leaf, LogOut, Recycle, ShieldCheck, Trophy, UserRound } from 'lucide-react';
 
 import { AccountNotice } from '@/components/auth/AccountNotice';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import { useTrackingStore } from '@/store/trackingStore';
 /** Perfil con resumen de cuenta y actividad ambiental. */
 export default function ProfileSection() {
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const records = useTrackingStore((state) => state.records);
   const quiz = useQuizStore((state) => state.result);
   const neighborhood = useCalendarStore((state) => state.neighborhood);
@@ -51,6 +52,10 @@ export default function ProfileSection() {
                 {user.emailVerifiedAt ? 'Cuenta verificada' : 'Correo pendiente'}
               </span>
               {user.role === 'admin' && <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-soft px-3 py-2 text-xs font-semibold"><ShieldCheck size={15} /> Administración</span>}
+              <Button variant="outline" size="sm" onClick={() => void logout()} aria-label="Cerrar sesión">
+                <LogOut aria-hidden="true" />
+                <span>Cerrar sesión</span>
+              </Button>
             </div>
           )}
         </div>

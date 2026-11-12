@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { LogOut, Recycle, ShieldCheck, UserRound } from 'lucide-react';
+import { Recycle, ShieldCheck, UserRound } from 'lucide-react';
 
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,6 @@ export function Header() {
   const { openPalette } = useWastePalette();
   const user = useAuthStore((state) => state.user);
   const openAuthDialog = useAuthStore((state) => state.openAuthDialog);
-  const logout = useAuthStore((state) => state.logout);
 
   return (
     <motion.header
@@ -124,15 +123,9 @@ export function Header() {
               </Button>
             )}
             {user ? (
-              <>
-                <Button asChild variant={route === 'profile' ? 'soft' : 'outline'} size="sm" aria-current={route === 'profile' ? 'page' : undefined}>
-                  <a href="#/perfil" aria-label="Abrir mi perfil"><UserRound aria-hidden="true" /><span className="hidden xl:inline">Mi perfil</span></a>
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => void logout()} aria-label="Cerrar sesión">
-                  <LogOut aria-hidden="true" />
-                  <span className="hidden xl:inline">Salir</span>
-                </Button>
-              </>
+              <Button asChild variant={route === 'profile' ? 'soft' : 'outline'} size="sm" aria-current={route === 'profile' ? 'page' : undefined}>
+                <a href="#/perfil" aria-label="Abrir mi perfil"><UserRound aria-hidden="true" /><span className="hidden xl:inline">Mi perfil</span></a>
+              </Button>
             ) : (
               <Button variant="outline" size="sm" onClick={() => openAuthDialog('login')} aria-label="Iniciar sesión">
                 <UserRound aria-hidden="true" />
