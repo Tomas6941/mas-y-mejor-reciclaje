@@ -4,10 +4,12 @@ import { useHashRoute } from '@/hooks/useHashRoute';
 
 type LegalSlug = 'privacidad' | 'terminos' | 'seguridad' | 'cookies';
 
+type LegalDocument = { slug: LegalSlug; title: string; summary: string; icon: typeof FileText; sections: [string, string[]][]; };
+
 const CONTACT_PENDING = 'Canal de contacto legal y de seguridad: pendiente de publicar.';
 const UPDATED_AT = '12 de noviembre de 2026';
 
-const DOCUMENTS = [
+const DOCUMENTS: LegalDocument[] = [
   {
     slug: 'privacidad' as const,
     title: 'Política de privacidad',
