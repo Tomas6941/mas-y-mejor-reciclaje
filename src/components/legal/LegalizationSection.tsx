@@ -167,7 +167,7 @@ export default function LegalizationSection() {
             {DOCUMENTS.map((item) => {
               const Icon = item.icon;
               return (
-                <a key={item.slug} href={\`#/legalizacion/\${item.slug}\`} className="group rounded-2xl border border-border bg-surface p-5 shadow-soft transition-transform hover:-translate-y-0.5">
+                <a key={item.slug} href={'#/legalizacion/' + item.slug} className="group rounded-2xl border border-border bg-surface p-5 shadow-soft transition-transform hover:-translate-y-0.5">
                   <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary"><Icon size={20} aria-hidden="true" /></span>
                   <h2 className="mt-4 font-display text-lg font-bold group-hover:text-primary">{item.title}</h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted">{item.summary}</p>
