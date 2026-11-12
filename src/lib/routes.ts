@@ -6,10 +6,11 @@ import {
   Recycle,
   ShieldCheck,
   TrendingUp,
+  UserRound,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 
-export type RouteKey = 'home' | 'map' | 'guide' | 'calendar' | 'tracking' | 'report' | 'admin' | 'legal';
+export type RouteKey = 'home' | 'map' | 'guide' | 'calendar' | 'tracking' | 'profile' | 'report' | 'admin' | 'legal';
 
 export interface NavItem {
   key: RouteKey;
@@ -42,6 +43,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: TrendingUp,
     primary: true,
   },
+  { key: 'profile', hash: '#/perfil', label: 'Mi perfil', shortLabel: 'Perfil', icon: UserRound, primary: false },
   {
     key: 'report',
     hash: '#/reportar',
@@ -72,6 +74,7 @@ export const ROUTE_COMPONENTS: Record<RouteKey, () => Promise<{ default: Compone
   guide: () => import('@/components/guide/GuideSection'),
   calendar: () => import('@/components/calendar/CalendarSection'),
   tracking: () => import('@/components/tracking/TrackingSection'),
+  profile: () => import('@/components/profile/ProfileSection'),
   report: () => import('@/components/report/ReportSection'),
   admin: () => import('@/components/admin/AdminSection'),
   legal: () => import('@/components/legal/LegalizationSection'),
@@ -98,6 +101,8 @@ export function parseHash(hash: string): { route: RouteKey; params: URLSearchPar
       return { route: 'calendar', params };
     case 'seguimiento':
       return { route: 'tracking', params };
+    case 'perfil':
+      return { route: 'profile', params };
     case 'reportar':
       return { route: 'report', params };
     case 'admin':

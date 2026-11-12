@@ -112,10 +112,15 @@ export function Header() {
               </Button>
             )}
             {user ? (
-              <Button variant="outline" size="sm" onClick={() => void logout()} aria-label="Cerrar sesión">
-                <LogOut aria-hidden="true" />
-                <span className="hidden xl:inline">Salir</span>
-              </Button>
+              <>
+                <Button asChild variant={route === 'profile' ? 'soft' : 'outline'} size="sm" aria-current={route === 'profile' ? 'page' : undefined}>
+                  <a href="#/perfil" aria-label="Abrir mi perfil"><UserRound aria-hidden="true" /><span className="hidden xl:inline">Mi perfil</span></a>
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => void logout()} aria-label="Cerrar sesión">
+                  <LogOut aria-hidden="true" />
+                  <span className="hidden xl:inline">Salir</span>
+                </Button>
+              </>
             ) : (
               <Button variant="outline" size="sm" onClick={() => openAuthDialog('login')} aria-label="Iniciar sesión">
                 <UserRound aria-hidden="true" />

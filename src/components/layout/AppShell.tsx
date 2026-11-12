@@ -27,6 +27,7 @@ const MapSection = lazy(() => import('@/components/map/MapSection'));
 const GuideSection = lazy(() => import('@/components/guide/GuideSection'));
 const CalendarSection = lazy(() => import('@/components/calendar/CalendarSection'));
 const TrackingSection = lazy(() => import('@/components/tracking/TrackingSection'));
+const ProfileSection = lazy(() => import('@/components/profile/ProfileSection'));
 const ReportSection = lazy(() => import('@/components/report/ReportSection'));
 const AdminSection = lazy(() => import('@/components/admin/AdminSection'));
 const LegalizationSection = lazy(() => import('@/components/legal/LegalizationSection'));
@@ -37,6 +38,7 @@ const SECTION_BY_ROUTE = {
   guide: GuideSection,
   calendar: CalendarSection,
   tracking: TrackingSection,
+  profile: ProfileSection,
   report: ReportSection,
   admin: AdminSection,
   legal: LegalizationSection,
