@@ -1,9 +1,9 @@
 {
-  "name": "ecopunto",
+  "name": "mas-y-mejor-reciclaje",
   "private": true,
   "version": "2.0.0",
   "type": "module",
-  "description": "EcoPunto: encontrá puntos de reciclaje en Córdoba, aprendé a separar tus residuos, consultá horarios y seguí tu impacto ambiental.",
+  "description": "Mas y mejor reciclaje: encontrá puntos de reciclaje en Córdoba, aprendé a separar tus residuos, consultá horarios y seguí tu impacto ambiental.",
   "engines": {
     "node": ">=24"
   },
