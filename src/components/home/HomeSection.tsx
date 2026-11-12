@@ -8,7 +8,7 @@ import { getTrackingStats } from '@/lib/trackingStats';
 import { navigate } from '@/lib/routes';
 import { formatKg, formatInteger } from '@/lib/format';
 
-/** Portada: acceso rápido a las herramientas principales de EcoPunto. */
+/** Portada: acceso rápido a las herramientas principales del proyecto. */
 export default function HomeSection() {
   const points = usePointsStore((state) => state.points);
   const records = useTrackingStore((state) => state.records);
@@ -24,7 +24,7 @@ export default function HomeSection() {
         </div>
         <div className="relative z-10 max-w-xl lg:max-w-[54%]">
           <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/25 bg-white/5 px-3.5 py-1.5 text-xs font-semibold tracking-[0.16em] text-emerald-100">
-            <Recycle size={14} aria-hidden="true" /> ECO PUNTO · CÓRDOBA
+            <Recycle size={14} aria-hidden="true" /> MAS Y MEJOR RECICLAJE · CÓRDOBA
           </span>
           <h1 className="mt-6 max-w-2xl font-display text-[2.8rem] font-bold leading-[0.98] tracking-tight sm:text-6xl lg:text-[4.5rem]">
             Reciclar en <span className="text-[#91e176]">Córdoba</span> nunca fue tan fácil
@@ -79,7 +79,7 @@ export default function HomeSection() {
       </section>
 
       <div className="container-page space-y-12 py-12 sm:space-y-16 sm:py-16">
-      <section aria-label="EcoPunto en números" className="grid gap-3 sm:grid-cols-3">
+      <section aria-label="Mas y mejor reciclaje en números" className="grid gap-3 sm:grid-cols-3">
         <Metric icon={<MapPin />} label="Puntos cargados" value={formatInteger(points.length)} />
         <Metric icon={<Recycle />} label="Kilos registrados" value={`${formatKg(stats.total)} kg`} />
         <Metric icon={<TrendingUp />} label="Personas en la red" value={formatInteger(NEIGHBOR_COUNT)} />
