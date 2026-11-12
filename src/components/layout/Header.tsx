@@ -11,13 +11,13 @@ import { useAuthStore } from '@/store/authStore';
 
 import { ThemeToggle } from './ThemeToggle';
 
-/** Logo EcoPunto con el anillo de reciclaje. */
+/** Marca del proyecto con el símbolo de reciclaje. */
 function BrandMark() {
   return (
     <a
       href="#/"
       className="flex items-center gap-2.5 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-      aria-label="EcoPunto, ir al inicio"
+      aria-label="Mas y mejor reciclaje, ir al inicio"
     >
       <span
         aria-hidden="true"
@@ -39,7 +39,7 @@ function BrandMark() {
           />
         </svg>
       </span>
-      <span className="font-display text-lg font-bold tracking-tight">EcoPunto</span>
+      <span className="whitespace-nowrap font-display text-xs font-bold leading-tight tracking-tight sm:text-base">Mas y mejor reciclaje</span>
     </a>
   );
 }
