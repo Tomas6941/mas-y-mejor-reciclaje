@@ -15,14 +15,14 @@ export default function HomeSection() {
   const stats = getTrackingStats(records);
 
   return (
-    <div className="container-page space-y-12 pb-16 pt-28 sm:space-y-16">
-      <section className="relative isolate min-h-[560px] overflow-hidden rounded-[2rem] bg-[#073c2c] px-6 py-12 text-white shadow-soft sm:min-h-[600px] sm:px-10 sm:py-16 lg:flex lg:items-center lg:px-14">
+    <div className="w-full">
+      <section className="relative isolate flex min-h-[100svh] w-full items-center overflow-hidden bg-[#073c2c] px-6 pb-12 pt-28 text-white sm:px-10 sm:pb-16 sm:pt-32 lg:px-14">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -right-24 -top-32 size-[30rem] rounded-full bg-emerald-400/10 blur-3xl" />
           <div className="absolute -bottom-52 left-1/4 size-[34rem] rounded-full bg-green-400/10 blur-3xl" />
           <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(#b7efae 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
         </div>
-        <div className="relative z-10 max-w-2xl lg:w-[54%]">
+        <div className="relative z-10 max-w-xl lg:max-w-[54%]">
           <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/25 bg-white/5 px-3.5 py-1.5 text-xs font-semibold tracking-[0.16em] text-emerald-100">
             <Recycle size={14} aria-hidden="true" /> ECO PUNTO · CÓRDOBA
           </span>
@@ -41,7 +41,7 @@ export default function HomeSection() {
             </button>
           </div>
         </div>
-        <div aria-hidden="true" className="pointer-events-none relative mx-auto mt-8 w-full max-w-[590px] lg:absolute lg:inset-y-0 lg:right-0 lg:mt-0 lg:w-[55%] lg:max-w-none">
+        <div aria-hidden="true" className="pointer-events-none absolute bottom-0 right-[-30%] z-0 w-[120%] max-w-[590px] opacity-45 sm:right-[-18%] sm:w-[90%] lg:inset-y-0 lg:right-0 lg:w-[55%] lg:max-w-none lg:opacity-100">
           <svg viewBox="0 0 650 500" className="h-auto w-full drop-shadow-2xl lg:absolute lg:bottom-0 lg:right-[-2%] lg:h-full lg:w-auto lg:max-w-none" role="presentation">
             <defs>
               <linearGradient id="hero-sky" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#a9e2d8" /><stop offset="1" stopColor="#e4f0c5" /></linearGradient>
@@ -78,6 +78,7 @@ export default function HomeSection() {
         </div>
       </section>
 
+      <div className="container-page space-y-12 py-12 sm:space-y-16 sm:py-16">
       <section aria-label="EcoPunto en números" className="grid gap-3 sm:grid-cols-3">
         <Metric icon={<MapPin />} label="Puntos cargados" value={formatInteger(points.length)} />
         <Metric icon={<Recycle />} label="Kilos registrados" value={`${formatKg(stats.total)} kg`} />
@@ -105,6 +106,7 @@ export default function HomeSection() {
         </CardContent>
       </Card>
       <p className="text-center text-xs text-muted">Los puntos, horarios y cifras de esta demo son datos ilustrativos y pueden no reflejar el servicio oficial.</p>
+      </div>
     </div>
   );
 }
