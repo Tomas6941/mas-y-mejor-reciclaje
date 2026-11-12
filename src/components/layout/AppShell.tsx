@@ -29,6 +29,7 @@ const CalendarSection = lazy(() => import('@/components/calendar/CalendarSection
 const TrackingSection = lazy(() => import('@/components/tracking/TrackingSection'));
 const ReportSection = lazy(() => import('@/components/report/ReportSection'));
 const AdminSection = lazy(() => import('@/components/admin/AdminSection'));
+const LegalizationSection = lazy(() => import('@/components/legal/LegalizationSection'));
 
 const SECTION_BY_ROUTE = {
   home: HomeSection,
@@ -38,6 +39,7 @@ const SECTION_BY_ROUTE = {
   tracking: TrackingSection,
   report: ReportSection,
   admin: AdminSection,
+  legal: LegalizationSection,
 } as const;
 
 function PageFallback() {
