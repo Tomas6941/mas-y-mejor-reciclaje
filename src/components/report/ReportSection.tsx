@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { LocationPicker } from '@/components/map/LocationPicker';
 import { REPORT_TYPES } from '@/data/materials';
 import { reportSchema } from '@/lib/schemas';
 import { compressReportImage } from '@/lib/reportImage';
@@ -41,9 +43,12 @@ export default function ReportSection() {
   const [pointId, setPointId] = useState(params.get('point') ?? '');
   const [comment, setComment] = useState('');
   const [suggestedLocation, setSuggestedLocation] = useState('');
+  const [suggestedLat, setSuggestedLat] = useState<number>();
+  const [suggestedLng, setSuggestedLng] = useState<number>();
+  const [suggestedName, setSuggestedName] = useState('');
   const [imageData, setImageData] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
-  const [errors, setErrors] = useState<{ pointId?: string; type?: string; comment?: string; suggestedLocation?: string }>({});
+  const [errors, setErrors] = useState<{ pointId?: string; type?: string; comment?: string; suggestedLocation?: string; suggestedName?: string }>({});
 
   const pointRequired = category === 'container_status' || (category === 'suggestion' && type !== 'add_point');
   const point = useMemo(() => points.find((item) => item.id === pointId) ?? null, [points, pointId]);
@@ -51,12 +56,12 @@ export default function ReportSection() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const parsed = reportSchema.safeParse({ category, pointId, type, comment, suggestedLocation, imageData });
+    const parsed = reportSchema.safeParse({ category, pointId, type, comment, suggestedLocation, suggestedName, suggestedLat, suggestedLng, imageData });
     if (!parsed.success) {
       const nextErrors: typeof errors = {};
       parsed.error.issues.forEach((issue) => {
         const key = issue.path[0];
-        if (key === 'pointId' || key === 'type' || key === 'comment' || key === 'suggestedLocation') nextErrors[key] = issue.message;
+        if (key === 'pointId' || key === 'type' || key === 'comment' || key === 'suggestedLocation' || key === 'suggestedName') nextErrors[key] = issue.message;
       });
       setErrors(nextErrors);
       return;
@@ -74,6 +79,9 @@ export default function ReportSection() {
         type: parsed.data.type,
         comment: parsed.data.comment,
         suggestedLocation: parsed.data.suggestedLocation,
+        suggestedName: parsed.data.suggestedName,
+        suggestedLat: parsed.data.suggestedLat,
+        suggestedLng: parsed.data.suggestedLng,
         imageData: parsed.data.imageData,
       });
       setErrors({});
@@ -81,6 +89,7 @@ export default function ReportSection() {
       setPointId('');
       setComment('');
       setSuggestedLocation('');
+      setSuggestedLat(undefined); setSuggestedLng(undefined); setSuggestedName('');
       setImageData(undefined);
       toast.success('Envío recibido para revisión. ¡Gracias por colaborar!');
     } catch (error) {
@@ -114,7 +123,8 @@ export default function ReportSection() {
 
             {pointRequired && <div className="space-y-2"><Label htmlFor="report-point">Punto o contenedor relacionado</Label><Select value={pointId} onValueChange={setPointId}><SelectTrigger id="report-point" aria-invalid={Boolean(errors.pointId)}><SelectValue placeholder="Elegí un punto" /></SelectTrigger><SelectContent>{points.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}</SelectContent></Select>{errors.pointId && <p className="text-sm text-danger" role="alert">{errors.pointId}</p>}</div>}
 
-            {category === 'suggestion' && type === 'add_point' && <div className="space-y-2"><Label htmlFor="report-location">Ubicación sugerida</Label><Textarea id="report-location" value={suggestedLocation} maxLength={240} onChange={(event) => setSuggestedLocation(event.target.value)} placeholder="Dirección, cruce de calles o referencia cercana" aria-invalid={Boolean(errors.suggestedLocation)} /><p className="text-xs text-muted" role={errors.suggestedLocation ? 'alert' : undefined}>{errors.suggestedLocation ?? `${suggestedLocation.length}/240`}</p></div>}
+            {category === 'suggestion' && type === 'add_point' && <div className="space-y-2"><Label htmlFor="report-name">Nombre propuesto</Label><Input id="report-name" value={suggestedName} maxLength={160} onChange={(event) => setSuggestedName(event.target.value)} placeholder="Ej. Punto verde Parque Sarmiento" aria-invalid={Boolean(errors.suggestedName)} />{errors.suggestedName && <p className="text-sm text-danger" role="alert">{errors.suggestedName}</p>}</div>}
+            {category === 'suggestion' && (type === 'add_point' || type === 'move_point') && <div className="space-y-2"><Label>{type === 'move_point' ? 'Nueva ubicación del punto' : 'Ubicación propuesta'}</Label><p className="text-xs text-muted">Tocá el mapa para marcar el lugar. El equipo verificará la ubicación antes de aplicarla.</p><LocationPicker value={suggestedLat !== undefined && suggestedLng !== undefined ? [suggestedLat, suggestedLng] : null} onChange={(lat, lng) => { setSuggestedLat(lat); setSuggestedLng(lng); }} /><p className="text-xs text-muted" role={errors.suggestedLocation ? 'alert' : undefined}>{errors.suggestedLocation ?? (suggestedLat !== undefined ? `Coordenadas: ${suggestedLat.toFixed(6)}, ${suggestedLng?.toFixed(6)}` : 'Sin ubicación seleccionada')}</p><Label htmlFor="report-location">Dirección o referencia</Label><Textarea id="report-location" value={suggestedLocation} maxLength={240} onChange={(event) => setSuggestedLocation(event.target.value)} placeholder="Dirección, cruce de calles o referencia cercana" /></div>}
 
             <div className="space-y-2"><Label htmlFor="report-comment">Detalle (opcional)</Label><Textarea id="report-comment" value={comment} maxLength={500} onChange={(event) => setComment(event.target.value)} placeholder={category === 'suggestion' && type === 'move_point' ? 'Contanos a dónde convendría moverlo y por qué...' : 'Agregá información que ayude a revisar el envío...'} aria-invalid={Boolean(errors.comment)} /><div className="flex justify-between text-xs text-muted"><span>{errors.comment ?? 'No incluyas datos personales.'}</span><span>{comment.length}/500</span></div></div>
 

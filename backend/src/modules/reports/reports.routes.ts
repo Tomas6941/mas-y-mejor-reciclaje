@@ -42,6 +42,9 @@ export const reportRoutes: FastifyPluginAsync<ReportRoutesOptions> = async (app,
         type: reports.type,
         comment: reports.comment,
         suggestedLocation: reports.suggestedLocation,
+        suggestedName: reports.suggestedName,
+        suggestedLat: reports.suggestedLatitude,
+        suggestedLng: reports.suggestedLongitude,
         hasImage: isNotNull(reports.imageData),
         status: reports.status,
         timestamp: reports.createdAt,
@@ -141,6 +144,9 @@ export const reportRoutes: FastifyPluginAsync<ReportRoutesOptions> = async (app,
         type: input.type,
         comment: input.comment,
         suggestedLocation: input.suggestedLocation || null,
+        suggestedName: input.suggestedName || null,
+        suggestedLatitude: input.suggestedLat === undefined ? null : String(input.suggestedLat),
+        suggestedLongitude: input.suggestedLng === undefined ? null : String(input.suggestedLng),
         imageData,
       })
       .returning({ id: reports.id, category: reports.category, type: reports.type, comment: reports.comment, timestamp: reports.createdAt });
@@ -168,12 +174,28 @@ export const reportRoutes: FastifyPluginAsync<ReportRoutesOptions> = async (app,
         .update(reports)
         .set({ status: decision, reviewerId: request.authUser!.id, reviewedAt: now })
         .where(and(eq(reports.id, id), eq(reports.status, 'pending')))
-        .returning({ id: reports.id, pointId: reports.pointId, status: reports.status });
+        .returning({ id: reports.id, pointId: reports.pointId, status: reports.status, category: reports.category, type: reports.type, suggestedName: reports.suggestedName, suggestedLocation: reports.suggestedLocation, suggestedLatitude: reports.suggestedLatitude, suggestedLongitude: reports.suggestedLongitude });
 
       if (!updated) {
         const [existing] = await tx.select({ id: reports.id }).from(reports).where(eq(reports.id, id)).limit(1);
         if (!existing) throw new AppError(404, 'REPORT_NOT_FOUND', 'No encontramos ese reporte.');
         throw new AppError(409, 'REPORT_ALREADY_REVIEWED', 'Ese reporte ya fue revisado.');
+      }
+
+      if (decision === 'approved' && updated.category === 'suggestion') {
+        if (updated.type === 'move_point') {
+          if (!updated.pointId || updated.suggestedLatitude === null || updated.suggestedLongitude === null) throw new AppError(409, 'SUGGESTION_LOCATION_MISSING', 'La sugerencia no tiene coordenadas para aplicar.');
+          await tx.update(points).set({ latitude: updated.suggestedLatitude, longitude: updated.suggestedLongitude, ...(updated.suggestedLocation ? { address: updated.suggestedLocation } : {}), updatedAt: now }).where(eq(points.id, updated.pointId));
+        } else if (updated.type === 'remove_point') {
+          if (!updated.pointId) throw new AppError(409, 'SUGGESTION_POINT_MISSING', 'La sugerencia no tiene un punto asociado.');
+          await tx.update(points).set({ isActive: false, updatedAt: now }).where(eq(points.id, updated.pointId));
+        } else if (updated.type === 'add_point') {
+          if (!updated.suggestedName || updated.suggestedLatitude === null || updated.suggestedLongitude === null) throw new AppError(409, 'SUGGESTION_DETAILS_MISSING', 'La sugerencia requiere nombre y ubicación marcada en el mapa.');
+          const publicId = updated.suggestedName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 70) || `punto-${updated.id.slice(0, 8)}`;
+          const [createdPoint] = await tx.insert(points).values({ publicId: `${publicId}-${updated.id.slice(0, 6)}`, name: updated.suggestedName, address: updated.suggestedLocation || `${updated.suggestedLatitude}, ${updated.suggestedLongitude}`, latitude: updated.suggestedLatitude, longitude: updated.suggestedLongitude, type: 'green_point', status: 'available', hours: 'A confirmar' }).returning({ id: points.id });
+          if (!createdPoint) throw new AppError(500, 'POINT_CREATE_FAILED', 'No se pudo crear el punto sugerido.');
+          await tx.insert(auditLog).values({ actorId: request.authUser!.id, action: 'point.created_from_suggestion', entityType: 'point', entityId: createdPoint.id, details: { reportId: updated.id } });
+        }
       }
 
       await tx.insert(auditLog).values({

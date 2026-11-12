@@ -1,5 +1,5 @@
 import { relations, sql } from 'drizzle-orm';
-import { check, index, jsonb, pgEnum, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { check, index, jsonb, numeric, pgEnum, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 
 import { points } from './points.js';
 import { users } from './users.js';
@@ -24,6 +24,9 @@ export const reports = pgTable(
     type: reportTypeEnum('type').notNull(),
     comment: varchar('comment', { length: 500 }).notNull().default(''),
     suggestedLocation: varchar('suggested_location', { length: 240 }),
+    suggestedName: varchar('suggested_name', { length: 160 }),
+    suggestedLatitude: numeric('suggested_latitude', { precision: 9, scale: 6 }),
+    suggestedLongitude: numeric('suggested_longitude', { precision: 9, scale: 6 }),
     imageData: text('image_data'),
     status: reportReviewStatusEnum('status').notNull().default('pending'),
     reviewerId: uuid('reviewer_id').references(() => users.id, { onDelete: 'set null' }),

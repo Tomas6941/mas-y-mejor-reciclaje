@@ -12,6 +12,9 @@ export interface AdminReport {
   type: ReportType;
   comment: string;
   suggestedLocation: string | null;
+  suggestedLat: string | null;
+  suggestedLng: string | null;
+  suggestedName: string | null;
   hasImage: boolean;
   status: AdminReportStatus;
   timestamp: string;

@@ -7,7 +7,7 @@ interface ReportsState {
   reports: Report[];
   loading: boolean;
   fetchReports: () => Promise<void>;
-  addReport: (input: { point: RecyclePoint | null; category: ReportCategory; type: ReportType; comment: string; suggestedLocation: string; imageData?: string }) => Promise<Report>;
+  addReport: (input: { point: RecyclePoint | null; category: ReportCategory; type: ReportType; comment: string; suggestedLocation: string; suggestedName?: string; suggestedLat?: number; suggestedLng?: number; imageData?: string }) => Promise<Report>;
   clearState: () => void;
 }
 
@@ -23,9 +23,9 @@ export const useReportsStore = create<ReportsState>((set) => ({
       set({ loading: false });
     }
   },
-  addReport: async ({ point, category, type, comment, suggestedLocation, imageData }) => {
+  addReport: async ({ point, category, type, comment, suggestedLocation, suggestedName, suggestedLat, suggestedLng, imageData }) => {
     const created = await apiRequest<Omit<Report, 'pointName'> & { pointName?: string | null }>('/reports', {
-      body: { pointId: point?.id ?? '', category, type, comment, suggestedLocation, imageData },
+      body: { pointId: point?.id ?? '', category, type, comment, suggestedLocation, suggestedName, suggestedLat, suggestedLng, imageData },
     });
     return { ...created, pointName: point?.name ?? null };
   },
