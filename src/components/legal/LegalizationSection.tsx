@@ -6,7 +6,8 @@ type LegalSlug = 'privacidad' | 'terminos' | 'seguridad' | 'cookies';
 
 type LegalDocument = { slug: LegalSlug; title: string; summary: string; icon: typeof FileText; sections: [string, string[]][]; };
 
-const CONTACT_PENDING = 'Canal de contacto legal y de seguridad: pendiente de publicar.';
+const CONTACT_PENDING = 'Canal de contacto para solicitudes legales y de seguridad: pendiente de definir.';
+const PROJECT_ADDRESS = 'Escuela Rebeca Guber, Agustin Garzon 1221, Córdoba, Argentina';
 const UPDATED_AT = '12 de noviembre de 2026';
 
 const DOCUMENTS: LegalDocument[] = [
@@ -17,7 +18,7 @@ const DOCUMENTS: LegalDocument[] = [
     icon: LockKeyhole,
     sections: [
       ['Responsable y contacto', [
-        'La identidad y el domicilio legal del responsable deben completarse antes de publicar la versión definitiva.',
+        'Responsable del servicio: Tomas Gonzalez. Domicilio de contacto informado para el proyecto: ' + PROJECT_ADDRESS + '. Debe confirmarse que la escuela autoriza recibir allí solicitudes legales antes de publicar la versión definitiva.',
         CONTACT_PENDING,
       ]],
       ['Datos que tratamos', [
@@ -57,7 +58,7 @@ const DOCUMENTS: LegalDocument[] = [
     sections: [
       ['El servicio', [
         'Mas y mejor reciclaje es un servicio gratuito de información y participación para promover el reciclaje en Córdoba. Permite consultar puntos, materiales y horarios; aprender sobre separación; registrar actividad individual; y enviar reportes comunitarios.',
-        'La identidad y domicilio legal del responsable, y su canal de contacto, deben completarse antes de publicar la versión definitiva.',
+        'Responsable del servicio: Tomas Gonzalez. Domicilio de contacto informado para el proyecto: ' + PROJECT_ADDRESS + '. La autorización para usarlo como domicilio legal y el canal de contacto deben confirmarse antes de publicar la versión definitiva.',
       ]],
       ['Información de puntos y horarios', [
         'La ubicación, recepción de materiales, estado y horario se ofrecen como información de referencia. Pueden estar desactualizados o ser demostrativos. Confirmá la información con el operador correspondiente antes de trasladarte.',
@@ -90,7 +91,7 @@ const DOCUMENTS: LegalDocument[] = [
         'El backend configura encabezados de seguridad y redacta cookies y encabezados de autorización en sus registros. Estas medidas reducen riesgos, pero ningún sistema conectado a Internet puede garantizar seguridad absoluta.',
       ]],
       ['Reporte responsable', [
-        'El canal para reportar vulnerabilidades está pendiente de publicar. El reporte debería incluir una descripción, pasos mínimos para reproducirla e impacto observado. No accedas a datos ajenos, no modifiques información, no interrumpas el servicio y no publiques detalles antes de coordinar una solución.',
+        'El canal para reportar vulnerabilidades está pendiente de definir. El domicilio de contacto del proyecto informado es ' + PROJECT_ADDRESS + ', sujeto a confirmar autorización. El reporte debería incluir una descripción, pasos mínimos para reproducirla e impacto observado. No accedas a datos ajenos, no modifiques información, no interrumpas el servicio y no publiques detalles antes de coordinar una solución.',
         'No envíes contraseñas, tokens activos ni datos personales de terceros.',
       ]],
       ['Incidentes', [
@@ -122,7 +123,7 @@ const DOCUMENTS: LegalDocument[] = [
 ];
 
 const PENDING_ITEMS = [
-  'Completar identidad y domicilio legal del responsable y publicar un canal de contacto.',
+  'Confirmar la autorización para usar la dirección de la Escuela Rebeca Guber como domicilio de contacto/legal y definir cómo se recibirán solicitudes.',
   'Confirmar regiones de Vercel y Neon y ubicación de respaldos.',
   'Confirmar proveedor SMTP activo en producción.',
   'Definir plazos de conservación y proceso completo de eliminación de cuenta.',
