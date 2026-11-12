@@ -22,14 +22,14 @@ async function withServer(app: FastifyInstance, run: (baseUrl: string) => Promis
 
 test('Vercel handler forwards path, query, body, cookies and response headers to Fastify', async () => {
   const app = Fastify({ logger: false });
-  app.post('/api/v1/echo', async (request, reply) => {
+  app.post('/api/v1/me/preferences', async (request, reply) => {
     reply.header('x-fastify-route', 'echo');
     return { url: request.url, cookie: request.headers.cookie, body: request.body };
   });
   await app.ready();
 
   await withServer(app, async (baseUrl) => {
-    const response = await fetch(`${baseUrl}/api/v1/echo?source=web`, {
+    const response = await fetch(`${baseUrl}/api/v1/me/preferences?source=web`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', cookie: 'session=abc' },
       body: JSON.stringify({ hello: 'cordoba' }),
@@ -37,7 +37,7 @@ test('Vercel handler forwards path, query, body, cookies and response headers to
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('x-fastify-route'), 'echo');
     assert.deepEqual(await response.json(), {
-      url: '/api/v1/echo?source=web',
+      url: '/api/v1/me/preferences?source=web',
       cookie: 'session=abc',
       body: { hello: 'cordoba' },
     });

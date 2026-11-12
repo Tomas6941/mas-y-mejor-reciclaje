@@ -6,7 +6,7 @@ The Vercel deployment currently serves the Vite frontend only. The browser uses 
 
 ## Approved approach
 
-Expose the existing Fastify application through one Node.js Vercel Function at `/api/v1/*`. The function will reuse `buildApp`, preserve the original URL, method, headers, cookies, request body, and Fastify response, and cache the initialized Fastify app per warm function instance. The frontend keeps using the same-origin `/api/v1` base, so session cookies remain first-party and no public backend URL or browser-side CORS setup is needed.
+Expose the existing Fastify application through Vercel Node.js Functions for API paths up to four segments deep. Each function delegates to one shared handler that reuses `buildApp`, preserves the original URL, method, headers, cookies, request body, and Fastify response, and caches the initialized Fastify app per warm function instance. The frontend keeps using the same-origin `/api/v1` base, so session cookies remain first-party and no public backend URL or browser-side CORS setup is needed.
 
 Vercel must install the root Vite dependencies and the backend's separate dependencies, then build both the static frontend and backend function adapter. Keep the local Vite proxy unchanged for local development.
 
@@ -30,7 +30,7 @@ The existing Nodemailer sender awaits `sendMail`; Vercel's Node runtime permits 
 1. A Vercel Node handler can route GET and JSON POST requests to a Fastify app while preserving path, query, body, and cookies.
 2. `GET /api/v1/health` works through the Vercel function.
 3. Public points and neighborhoods routes reach PostgreSQL through the function.
-4. Unauthenticated private endpoints return 401 rather than Vercel 404.
+4. Unauthenticated private endpoints at every used route depth return 401 rather than Vercel 404.
 5. The function can be built from a clean Vercel-style install that installs both package manifests.
 6. Frontend lint, typecheck, build, backend tests/build, and function integration tests pass.
 7. Vercel deployment settings are documented without including credentials.

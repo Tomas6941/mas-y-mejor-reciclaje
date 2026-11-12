@@ -15,7 +15,7 @@
 - `backend/src/vercel.ts`: singleton Fastify bootstrap and Node HTTP adapter for Vercel.
 - `backend/tests/vercel-handler.test.ts`: integration tests for path/query/body/cookie forwarding and safe bootstrap errors.
 - `backend/package.json` and `backend/package-lock.json`: Vercel database-pool helper dependency if available and build/test scripts as needed.
-- `api/v1/[...path].js`: Vercel catch-all function entry that imports the compiled backend adapter and disables request-body parsing when necessary.
+- `api/_handler.js` and `api/v1/[route]...`: shared handler plus Vercel function entrypoints for one through four API path segments.
 - `vercel.json`: install both package manifests and build the Vite app plus backend adapter.
 - `.gitignore`: ignore Vercel local project files.
 - `backend/README.md`: document Vercel runtime configuration and deployment steps.
@@ -38,7 +38,7 @@
 
 ## Task 3: Vercel deployment wiring
 
-- [x] Add one catch-all Node function for `/api/v1/*` and keep request bodies available to Fastify.
+- [x] Add Node function entrypoints for one through four API path segments and keep request bodies available to Fastify.
 - [x] Add Vercel install/build commands that run `npm ci` at the root and in `backend`, then build both packages.
 - [x] Keep the Vite `/api` proxy intact for local development.
 - [x] Add required runtime variable names and environment scopes to the backend deployment README; never copy secret values into the repo.
@@ -47,7 +47,7 @@
 ## Task 4: End-to-end verification
 
 - [x] Run backend tests/build, frontend lint/typecheck/build, and `git diff --check`.
-- [x] Verify adapter behavior locally through a real Node HTTP server and JSON GET/POST semantics.
+- [x] Verify adapter behavior locally through a real Node HTTP server and JSON GET/POST semantics; deployment testing exposed and fixed nested route matching.
 - [x] Confirm no `.env`, credentials, or generated local Vercel files are included.
 - [ ] Verify health, points, and private endpoints on an actual Vercel deployment after the user configures environment variables.
 - [ ] Push to `development`; then inspect the resulting Vercel preview if deployment access is available.

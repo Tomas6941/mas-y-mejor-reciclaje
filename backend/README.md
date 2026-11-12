@@ -18,7 +18,7 @@ Para email, configurá una cuenta Google dedicada con verificación en dos pasos
 
 ## Despliegue en Vercel
 
-El repositorio se despliega desde su raíz. `vercel.json` instala las dependencias del frontend y `backend`, compila ambos y publica `api/v1/[...path].js` como función Node.js. La función reutiliza Fastify y su pool durante la vida de una instancia; no inicia un puerto HTTP. El runtime se fija a Node.js 24 mediante `engines` en el `package.json` raíz.
+El repositorio se despliega desde su raíz. `vercel.json` instala las dependencias del frontend y `backend`, compila ambos y publica funciones Node.js explícitas para rutas API de hasta cuatro segmentos. Todas delegan a Fastify y reutilizan su pool durante la vida de una instancia; ninguna inicia un puerto HTTP. El runtime se fija a Node.js 24 mediante `engines` en el `package.json` raíz.
 
 En las configuraciones de **Preview** y **Production** del proyecto Vercel agregá estas variables, sin comillas:
 

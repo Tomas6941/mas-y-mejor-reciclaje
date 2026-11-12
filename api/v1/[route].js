@@ -1,5 +1,4 @@
-import { vercelHandler } from '../../backend/dist/vercel.js';
+import { vercelHandler } from '../_handler.js';
 
 export const config = { api: { bodyParser: false } };
-
 export default vercelHandler;
