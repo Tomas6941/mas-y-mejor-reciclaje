@@ -73,6 +73,20 @@ export const STATUS: Record<PointStatus, { label: string; short: string }> = {
   damaged: { label: 'En mal estado', short: 'Dañado' },
 };
 
+export type MapPointAvailability = 'available' | 'damaged' | 'unavailable';
+
+export const MAP_POINT_AVAILABILITY: Record<MapPointAvailability, { label: string; markerColor: string; badgeClass: string }> = {
+  available: { label: 'Disponible', markerColor: 'rgb(var(--primary))', badgeClass: 'bg-primary text-primary-foreground' },
+  damaged: { label: 'Dañado', markerColor: 'rgb(var(--accent))', badgeClass: 'bg-accent text-accent-foreground' },
+  unavailable: { label: 'No disponible', markerColor: 'rgb(var(--danger))', badgeClass: 'bg-danger text-danger-foreground' },
+};
+
+export function getMapPointAvailability(status: PointStatus): MapPointAvailability {
+  if (status === 'available') return 'available';
+  if (status === 'damaged') return 'damaged';
+  return 'unavailable';
+}
+
 export const REPORT_TO_STATUS: Record<Extract<ReportType, 'full' | 'damaged' | 'available'>, PointStatus> = {
   full: 'full',
   damaged: 'damaged',

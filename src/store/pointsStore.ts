@@ -16,7 +16,7 @@ export const usePointsStore = create<PointsState>((set) => ({
   fetchPoints: async () => {
     set({ loading: true });
     try {
-      const points = await apiRequest<RecyclePoint[]>('/points?limit=100');
+      const points = await apiRequest<RecyclePoint[]>('/points?limit=100', { cache: 'no-store' });
       set({ points });
     } finally {
       set({ loading: false });

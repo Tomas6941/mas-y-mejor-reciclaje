@@ -46,6 +46,7 @@ export const pointRoutes: FastifyPluginAsync = async (app) => {
       },
     },
   }, async (request, reply) => {
+    reply.header('Cache-Control', 'no-store, max-age=0');
     const parsed = pointListQuerySchema.safeParse(request.query);
     if (!parsed.success) {
       return reply.code(400).send({
