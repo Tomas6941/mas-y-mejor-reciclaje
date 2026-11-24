@@ -4,6 +4,8 @@ import { isoToDate } from '@/lib/dates';
 import { clamp, makeId } from '@/lib/utils';
 import type { MaterialKey, QuizResultState, RecyclePoint, Reminder, Report, TrackingRecord } from '@/types/domain';
 
+const STATUS_REPORT_TYPES = ['full', 'damaged', 'available'] as const;
+
 /** Sanea puntos guardados; null si no es un array. */
 export function sanitizePoints(data: unknown): RecyclePoint[] | null {
   if (!Array.isArray(data)) return null;
@@ -39,7 +41,8 @@ export function sanitizeReports(data: unknown): Report[] | null {
         Boolean(report) &&
         typeof report.id !== 'undefined' &&
         typeof report.pointId !== 'undefined' &&
-        REPORT_TO_STATUS[report.type as Report['type']] !== undefined,
+        STATUS_REPORT_TYPES.includes(report.type as typeof STATUS_REPORT_TYPES[number]) &&
+        REPORT_TO_STATUS[report.type as typeof STATUS_REPORT_TYPES[number]] !== undefined,
     )
     .map((report) => {
       const timestamp = new Date(String(report.timestamp));
@@ -47,12 +50,14 @@ export function sanitizeReports(data: unknown): Report[] | null {
         id: String(report.id),
         pointId: String(report.pointId),
         pointName: String(report.pointName || 'Punto de reciclaje'),
+        category: 'container_status' as const,
         type: report.type as Report['type'],
-        comment: String(report.comment || '').slice(0, 180),
+        comment: String(report.comment || '').slice(0, 500),
         timestamp: Number.isNaN(timestamp.getTime()) ? null : timestamp.toISOString(),
       };
     })
-    .filter((report): report is Report => report.timestamp !== null)
+    .filter((report) => report.timestamp !== null)
+    .map((report) => ({ ...report, timestamp: report.timestamp! }))
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 }
 

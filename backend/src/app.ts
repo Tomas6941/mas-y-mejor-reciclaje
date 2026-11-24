@@ -35,7 +35,7 @@ export async function buildApp({ env, logger = true }: BuildAppOptions = {}): Pr
           },
         }
       : false,
-    bodyLimit: 64 * 1024,
+    bodyLimit: 3_000_000,
     requestIdHeader: 'x-request-id',
     logController: new LogController({ requestIdLogLabel: 'requestId' }),
   });

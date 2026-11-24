@@ -19,7 +19,8 @@ export type WasteCategoryKey = MaterialKey | 'general';
 
 export type PointStatus = 'available' | 'near-full' | 'full' | 'damaged';
 
-export type ReportType = 'full' | 'damaged' | 'available';
+export type ReportCategory = 'container_status' | 'suggestion';
+export type ReportType = 'full' | 'damaged' | 'available' | 'move_point' | 'add_point' | 'remove_point';
 
 export type PointType = 'Punto verde' | 'Contenedor';
 
@@ -47,8 +48,9 @@ export interface RecyclePoint {
 
 export interface Report {
   id: string;
-  pointId: string;
-  pointName: string;
+  pointId: string | null;
+  pointName: string | null;
+  category: ReportCategory;
   type: ReportType;
   comment: string;
   /** ISO 8601, p. ej. 2026-11-11T14:30:00.000Z */

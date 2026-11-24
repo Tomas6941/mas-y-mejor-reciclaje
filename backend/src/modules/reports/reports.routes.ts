@@ -1,4 +1,4 @@
-import { and, desc, eq, lt, or } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, lt, or } from 'drizzle-orm';
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 
@@ -38,13 +38,19 @@ export const reportRoutes: FastifyPluginAsync<ReportRoutesOptions> = async (app,
         pointId: points.publicId,
         pointName: points.name,
         authorId: reports.authorId,
+        category: reports.category,
         type: reports.type,
         comment: reports.comment,
+        suggestedLocation: reports.suggestedLocation,
+        suggestedName: reports.suggestedName,
+        suggestedLat: reports.suggestedLatitude,
+        suggestedLng: reports.suggestedLongitude,
+        hasImage: isNotNull(reports.imageData),
         status: reports.status,
         timestamp: reports.createdAt,
       })
       .from(reports)
-      .innerJoin(points, eq(reports.pointId, points.id))
+      .leftJoin(points, eq(reports.pointId, points.id))
       .where(eq(reports.status, query.status ?? 'pending'))
       .orderBy(desc(reports.createdAt))
       .limit(query.limit ?? 50);
@@ -66,6 +72,7 @@ export const reportRoutes: FastifyPluginAsync<ReportRoutesOptions> = async (app,
     const rows = await app.db
       .select({
         id: reports.id,
+        category: reports.category,
         pointId: points.publicId,
         pointName: points.name,
         type: reports.type,
@@ -73,8 +80,10 @@ export const reportRoutes: FastifyPluginAsync<ReportRoutesOptions> = async (app,
         timestamp: reports.createdAt,
       })
       .from(reports)
-      .innerJoin(points, eq(reports.pointId, points.id))
-      .where(cursorFilter ? and(eq(reports.status, 'approved'), cursorFilter) : eq(reports.status, 'approved'))
+      .leftJoin(points, eq(reports.pointId, points.id))
+      .where(cursorFilter
+        ? and(eq(reports.status, 'approved'), eq(reports.category, 'container_status'), cursorFilter)
+        : and(eq(reports.status, 'approved'), eq(reports.category, 'container_status')))
       .orderBy(desc(reports.createdAt), desc(reports.id))
       .limit(limit + 1);
 
@@ -90,34 +99,62 @@ export const reportRoutes: FastifyPluginAsync<ReportRoutesOptions> = async (app,
     };
   });
 
+  app.get('/admin/reports/:id/image', {
+    preHandler: requireAdmin,
+    schema: { tags: ['admin'], summary: 'Get the image attached to a report' },
+  }, async (request) => {
+    const { id } = parse(reportIdParamsSchema, request.params);
+    const [report] = await app.db.select({ imageData: reports.imageData }).from(reports).where(eq(reports.id, id)).limit(1);
+    if (!report) throw new AppError(404, 'REPORT_NOT_FOUND', 'No encontramos ese reporte.');
+    if (!report.imageData) throw new AppError(404, 'REPORT_IMAGE_NOT_FOUND', 'Este reporte no tiene una imagen.');
+    return { data: { imageData: report.imageData } };
+  });
+
   app.post('/reports', {
     preHandler: requireVerifiedUser,
     config: { rateLimit: { max: 5, timeWindow: 60 * 60 * 1000 } },
-    schema: { tags: ['reports'], summary: 'Submit a point status report' },
+    schema: { tags: ['reports'], summary: 'Submit a point status report or location suggestion' },
   }, async (request, reply) => {
     const input = parse(createReportSchema, request.body);
-    const [point] = await app.db
+    const [point] = input.pointId ? await app.db
       .select({ id: points.id, publicId: points.publicId })
       .from(points)
       .where(eq(points.publicId, input.pointId))
-      .limit(1);
-    if (!point) throw new AppError(404, 'POINT_NOT_FOUND', 'No encontramos ese punto de reciclaje.');
+      .limit(1) : [];
+    if (input.pointId && !point) throw new AppError(404, 'POINT_NOT_FOUND', 'No encontramos ese punto de reciclaje.');
     if (!request.authUser) throw new AppError(401, 'UNAUTHENTICATED', 'Iniciá sesión para continuar.');
+
+    const imageData = input.imageData ?? null;
+    if (imageData) {
+      const encoded = imageData.slice('data:image/jpeg;base64,'.length);
+      const bytes = Buffer.from(encoded, 'base64');
+      if (bytes.length > 2 * 1024 * 1024 || bytes.toString('base64') !== encoded) {
+        throw new AppError(400, 'INVALID_REPORT_IMAGE', 'La imagen supera el tamaño permitido o no es válida.');
+      }
+      const isJpeg = bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+      if (!isJpeg) throw new AppError(400, 'INVALID_REPORT_IMAGE', 'La imagen debe ser un archivo JPG válido.');
+    }
 
     const [created] = await app.db
       .insert(reports)
       .values({
-        pointId: point.id,
+        pointId: point?.id ?? null,
         authorId: request.authUser.id,
+        category: input.category,
         type: input.type,
         comment: input.comment,
+        suggestedLocation: input.suggestedLocation || null,
+        suggestedName: input.suggestedName || null,
+        suggestedLatitude: input.suggestedLat === undefined ? null : String(input.suggestedLat),
+        suggestedLongitude: input.suggestedLng === undefined ? null : String(input.suggestedLng),
+        imageData,
       })
-      .returning({ id: reports.id, type: reports.type, comment: reports.comment, timestamp: reports.createdAt });
+      .returning({ id: reports.id, category: reports.category, type: reports.type, comment: reports.comment, timestamp: reports.createdAt });
 
     return reply.code(201).send({
       data: {
         ...created,
-        pointId: point.publicId,
+        pointId: point?.publicId ?? null,
         status: 'pending' as const,
       },
     });
@@ -137,12 +174,28 @@ export const reportRoutes: FastifyPluginAsync<ReportRoutesOptions> = async (app,
         .update(reports)
         .set({ status: decision, reviewerId: request.authUser!.id, reviewedAt: now })
         .where(and(eq(reports.id, id), eq(reports.status, 'pending')))
-        .returning({ id: reports.id, pointId: reports.pointId, status: reports.status });
+        .returning({ id: reports.id, pointId: reports.pointId, status: reports.status, category: reports.category, type: reports.type, suggestedName: reports.suggestedName, suggestedLocation: reports.suggestedLocation, suggestedLatitude: reports.suggestedLatitude, suggestedLongitude: reports.suggestedLongitude });
 
       if (!updated) {
         const [existing] = await tx.select({ id: reports.id }).from(reports).where(eq(reports.id, id)).limit(1);
         if (!existing) throw new AppError(404, 'REPORT_NOT_FOUND', 'No encontramos ese reporte.');
         throw new AppError(409, 'REPORT_ALREADY_REVIEWED', 'Ese reporte ya fue revisado.');
+      }
+
+      if (decision === 'approved' && updated.category === 'suggestion') {
+        if (updated.type === 'move_point') {
+          if (!updated.pointId || updated.suggestedLatitude === null || updated.suggestedLongitude === null) throw new AppError(409, 'SUGGESTION_LOCATION_MISSING', 'La sugerencia no tiene coordenadas para aplicar.');
+          await tx.update(points).set({ latitude: updated.suggestedLatitude, longitude: updated.suggestedLongitude, ...(updated.suggestedLocation ? { address: updated.suggestedLocation } : {}), updatedAt: now }).where(eq(points.id, updated.pointId));
+        } else if (updated.type === 'remove_point') {
+          if (!updated.pointId) throw new AppError(409, 'SUGGESTION_POINT_MISSING', 'La sugerencia no tiene un punto asociado.');
+          await tx.update(points).set({ isActive: false, updatedAt: now }).where(eq(points.id, updated.pointId));
+        } else if (updated.type === 'add_point') {
+          if (!updated.suggestedName || updated.suggestedLatitude === null || updated.suggestedLongitude === null) throw new AppError(409, 'SUGGESTION_DETAILS_MISSING', 'La sugerencia requiere nombre y ubicación marcada en el mapa.');
+          const publicId = updated.suggestedName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 70) || `punto-${updated.id.slice(0, 8)}`;
+          const [createdPoint] = await tx.insert(points).values({ publicId: `${publicId}-${updated.id.slice(0, 6)}`, name: updated.suggestedName, address: updated.suggestedLocation || `${updated.suggestedLatitude}, ${updated.suggestedLongitude}`, latitude: updated.suggestedLatitude, longitude: updated.suggestedLongitude, type: 'green_point', status: 'available', hours: 'A confirmar' }).returning({ id: points.id });
+          if (!createdPoint) throw new AppError(500, 'POINT_CREATE_FAILED', 'No se pudo crear el punto sugerido.');
+          await tx.insert(auditLog).values({ actorId: request.authUser!.id, action: 'point.created_from_suggestion', entityType: 'point', entityId: createdPoint.id, details: { reportId: updated.id } });
+        }
       }
 
       await tx.insert(auditLog).values({

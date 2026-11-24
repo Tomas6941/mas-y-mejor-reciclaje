@@ -73,7 +73,7 @@ export const STATUS: Record<PointStatus, { label: string; short: string }> = {
   damaged: { label: 'En mal estado', short: 'Dañado' },
 };
 
-export const REPORT_TO_STATUS: Record<ReportType, PointStatus> = {
+export const REPORT_TO_STATUS: Record<Extract<ReportType, 'full' | 'damaged' | 'available'>, PointStatus> = {
   full: 'full',
   damaged: 'damaged',
   available: 'available',
