@@ -1,0 +1,103 @@
+
+> ecopunto-backend@1.0.0 build
+> tsc -p tsconfig.json && node scripts/copy-seed-data.mjs
+
+src/db/schema/catalog.ts(1,43): error TS7016: Could not find a declaration file for module 'drizzle-orm/pg-core'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/pg-core/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/pg-core';`
+src/db/schema/personal.ts(1,32): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/db/schema/personal.ts(13,8): error TS7016: Could not find a declaration file for module 'drizzle-orm/pg-core'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/pg-core/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/pg-core';`
+src/db/schema/personal.ts(31,4): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/db/schema/personal.ts(46,4): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/db/schema/personal.ts(61,71): error TS7031: Binding element 'one' implicitly has an 'any' type.
+src/db/schema/personal.ts(69,65): error TS7031: Binding element 'one' implicitly has an 'any' type.
+src/db/schema/personal.ts(73,71): error TS7031: Binding element 'one' implicitly has an 'any' type.
+src/db/schema/points.ts(1,32): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/db/schema/points.ts(13,8): error TS7016: Could not find a declaration file for module 'drizzle-orm/pg-core'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/pg-core/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/pg-core';`
+src/db/schema/points.ts(41,4): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/db/schema/points.ts(56,4): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/db/schema/points.ts(59,53): error TS7031: Binding element 'many' implicitly has an 'any' type.
+src/db/schema/points.ts(63,69): error TS7031: Binding element 'one' implicitly has an 'any' type.
+src/db/schema/reports.ts(1,32): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/db/schema/reports.ts(2,95): error TS7016: Could not find a declaration file for module 'drizzle-orm/pg-core'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/pg-core/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/pg-core';`
+src/db/schema/reports.ts(36,4): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/db/schema/reports.ts(59,4): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/db/schema/reports.ts(62,55): error TS7031: Binding element 'one' implicitly has an 'any' type.
+src/db/schema/reports.ts(68,57): error TS7031: Binding element 'one' implicitly has an 'any' type.
+src/db/schema/schedules.ts(1,32): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/db/schema/schedules.ts(15,8): error TS7016: Could not find a declaration file for module 'drizzle-orm/pg-core'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/pg-core/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/pg-core';`
+src/db/schema/schedules.ts(44,4): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/db/schema/schedules.ts(61,4): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/db/schema/schedules.ts(67,79): error TS7031: Binding element 'one' implicitly has an 'any' type.
+src/db/schema/schedules.ts(67,84): error TS7031: Binding element 'many' implicitly has an 'any' type.
+src/db/schema/schedules.ts(75,85): error TS7031: Binding element 'one' implicitly has an 'any' type.
+src/db/schema/users.ts(1,21): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/db/schema/users.ts(2,92): error TS7016: Could not find a declaration file for module 'drizzle-orm/pg-core'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/pg-core/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/pg-core';`
+src/db/schema/users.ts(19,4): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/db/schema/users.ts(45,5): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/db/schema/users.ts(60,4): error TS7006: Parameter 'table' implicitly has an 'any' type.
+src/modules/admin/admin-users.service.ts(1,41): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/modules/admin/admin-users.service.ts(47,32): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/admin/admin-users.service.ts(48,28): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+src/modules/admin/admin-users.service.ts(71,32): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/admin/admin-users.service.ts(72,49): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+src/modules/admin/admin-users.service.ts(73,45): error TS7006: Parameter 'admin' implicitly has an 'any' type.
+src/modules/admin/admin-users.service.ts(89,48): error TS2344: Type 'unknown' does not satisfy the constraint '(...args: any) => any'.
+src/modules/admin/admin-users.service.ts(91,6): error TS2339: Property 'select' does not exist on type 'never'.
+src/modules/admin/admin.routes.ts(1,25): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/modules/admin/admin.routes.ts(33,53): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/admin/admin.routes.ts(69,53): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/admin/admin.routes.ts(110,51): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/admin/admin.routes.ts(131,58): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/admin/admin.routes.ts(178,58): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/auth/auth.service.ts(2,37): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/modules/auth/auth.service.ts(38,55): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/auth/auth.service.ts(126,46): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/auth/auth.service.ts(177,46): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/auth/auth.service.ts(206,46): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/auth/require-user.ts(2,29): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/modules/points/points.routes.ts(1,53): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/modules/preferences/preferences.routes.ts(1,25): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/modules/quiz/quiz.routes.ts(1,36): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/modules/reports/reports.routes.ts(1,50): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/modules/reports/reports.routes.ts(172,52): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/modules/schedules/schedules.routes.ts(1,30): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/modules/schedules/schedules.routes.ts(95,52): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+src/modules/tracking/tracking.routes.ts(1,31): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/modules/tracking/tracking.routes.ts(30,23): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/plugins/database.ts(2,46): error TS7016: Could not find a declaration file for module 'drizzle-orm/node-postgres'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/node-postgres/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/node-postgres';`
+src/scripts/migrate.ts(2,25): error TS7016: Could not find a declaration file for module 'drizzle-orm/node-postgres'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/node-postgres/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/node-postgres';`
+src/scripts/migrate.ts(3,25): error TS7016: Could not find a declaration file for module 'drizzle-orm/node-postgres/migrator'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/node-postgres/migrator.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/node-postgres/migrator';`
+src/scripts/promote-admin.ts(1,36): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/scripts/promote-admin.ts(3,25): error TS7016: Could not find a declaration file for module 'drizzle-orm/node-postgres'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/node-postgres/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/node-postgres';`
+src/scripts/seed.ts(2,25): error TS7016: Could not find a declaration file for module 'drizzle-orm/node-postgres'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/node-postgres/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/node-postgres';`
+src/seed.ts(3,25): error TS7016: Could not find a declaration file for module 'drizzle-orm'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm';`
+src/seed.ts(4,37): error TS7016: Could not find a declaration file for module 'drizzle-orm/node-postgres'. 'C:/Users/Estudiante/Desktop/mas-y-mejor-reciclaje/backend/node_modules/drizzle-orm/node-postgres/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/drizzle-orm` if it exists or add a new declaration (.d.ts) file containing `declare module 'drizzle-orm/node-postgres';`
+src/seed.ts(63,31): error TS7006: Parameter 'tx' implicitly has an 'any' type.
