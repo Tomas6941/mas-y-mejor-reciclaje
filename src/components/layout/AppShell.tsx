@@ -25,6 +25,7 @@ import { useQuizStore } from '@/store/quizStore';
 const HomeSection = lazy(() => import('@/components/home/HomeSection'));
 const MapSection = lazy(() => import('@/components/map/MapSection'));
 const GuideSection = lazy(() => import('@/components/guide/GuideSection'));
+const BlogSection = lazy(() => import('@/components/blog/BlogSection'));
 const CalendarSection = lazy(() => import('@/components/calendar/CalendarSection'));
 const TrackingSection = lazy(() => import('@/components/tracking/TrackingSection'));
 const ProfileSection = lazy(() => import('@/components/profile/ProfileSection'));
@@ -36,6 +37,7 @@ const SECTION_BY_ROUTE = {
   home: HomeSection,
   map: MapSection,
   guide: GuideSection,
+  blog: BlogSection,
   calendar: CalendarSection,
   tracking: TrackingSection,
   profile: ProfileSection,
