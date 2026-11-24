@@ -94,7 +94,7 @@ export default function HomeSection() {
         <div className="grid gap-4 md:grid-cols-2">
           <ActionCard icon={<MapPin />} title="Encontrá un punto verde" description="Explorá puntos y contenedores cercanos en el mapa de Córdoba." action="Abrir mapa" onClick={() => navigate('#/mapa')} />
           <ActionCard icon={<CalendarDays />} title="Revisá tu calendario" description="Consultá los días y horarios demostrativos de recolección por barrio." action="Ver calendario" onClick={() => navigate('#/calendario')} />
-          <ActionCard icon={<Recycle />} title="Consultá la guía" description="Buscá un residuo y descubrí cómo prepararlo antes de reciclar." action="Ver guía" onClick={() => navigate('#/guia')} />
+          <ActionCard icon={<Recycle />} title="Aprendé a reciclar" description="Buscá un residuo y descubrí cómo prepararlo antes de reciclar." action="Empezar" onClick={() => navigate('#/guia')} />
           <ActionCard icon={<TrendingUp />} title="Medí tu impacto" description="Registrá tus materiales y seguí tus kilos reciclados y logros." action="Ver seguimiento" onClick={() => navigate('#/seguimiento')} />
         </div>
       </section>

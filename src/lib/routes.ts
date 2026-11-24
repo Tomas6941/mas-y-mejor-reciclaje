@@ -34,7 +34,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: CalendarCheck2,
     primary: true,
   },
-  { key: 'guide', hash: '#/guia', label: 'Guía', shortLabel: 'Guía', icon: Recycle, primary: true },
+  { key: 'guide', hash: '#/guia', label: 'Aprendé', shortLabel: 'Aprendé', icon: Recycle, primary: true },
   {
     key: 'tracking',
     hash: '#/seguimiento',
