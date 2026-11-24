@@ -38,8 +38,8 @@ export const NAV_ITEMS: NavItem[] = [
   {
     key: 'tracking',
     hash: '#/seguimiento',
-    label: 'Seguimiento',
-    shortLabel: 'Impacto',
+    label: 'Mi seguimiento',
+    shortLabel: 'Mi seg.',
     icon: TrendingUp,
     primary: true,
   },
