@@ -83,6 +83,17 @@ export function SurveyHighlights() {
         </article>
       </div>
 
+      <div className="mt-4 grid gap-3 rounded-card border border-border bg-surface-soft p-4 sm:grid-cols-2 sm:gap-5 sm:p-5">
+        <div>
+          <p className="font-display text-xl font-bold tabular-nums">4,85 <span className="text-sm font-medium text-muted">/ 10</span></p>
+          <p className="mt-1 text-xs text-muted">Promedio de residuos que las personas dicen generar.</p>
+        </div>
+        <div>
+          <p className="font-display text-xl font-bold">2 categorías</p>
+          <p className="mt-1 text-xs text-muted">La respuesta más frecuente sobre cuántas separan (35 personas).</p>
+        </div>
+      </div>
+
       <p className="mt-3 text-xs leading-relaxed text-muted">En la pregunta por material hubo entre 55 y 73 respuestas válidas; la cantidad varía por material. La encuesta es interna y descriptiva, y no representa necesariamente a toda la ciudad.</p>
     </section>
   );
