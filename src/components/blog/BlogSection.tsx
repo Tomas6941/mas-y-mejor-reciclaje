@@ -1,18 +1,30 @@
-import { BarChart3, Leaf, MapPin, Recycle, Users, type LucideIcon } from 'lucide-react';
+import { BarChart3, Leaf } from 'lucide-react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+
+const COLORS = {
+  primary: 'rgb(var(--primary))',
+  accent: 'rgb(var(--accent))',
+  muted: 'rgb(var(--border-strong))',
+  grid: 'rgb(var(--border))',
+};
+
+const PIE_COLORS = [COLORS.primary, COLORS.accent, COLORS.muted];
 
 const WASTE_RATING = [4, 8, 17, 24, 32, 15, 12, 9, 1, 2].map((count, index) => ({
-  label: String(index + 1),
+  rating: String(index + 1),
   count,
 }));
-
-const SORTING_CATEGORIES = [
-  { label: '0 / ninguna', count: 27 },
-  { label: '2 categorías', count: 35 },
-  { label: '3 categorías', count: 8 },
-  { label: '4 categorías', count: 5 },
-  { label: '5 categorías', count: 2 },
-  { label: '8 categorías', count: 1 },
-];
 
 const MATERIALS = [
   { name: 'Plástico', n: 64, always: 48.4, sometimes: 10.9, never: 40.6, score: 1.08 },
@@ -35,6 +47,37 @@ const COURSES = [
   { name: 'Profes', count: 5, percent: 4.0, mean: 4.40, sd: 1.67 },
 ];
 
+const PIE_DATA = [
+  {
+    title: 'Tachos diferenciados en el barrio',
+    description: 'La mayoría no encuentra separación de residuos en su zona.',
+    total: 124,
+    data: [
+      { name: 'Sí hay', value: 30.6, count: 38 },
+      { name: 'No hay', value: 69.4, count: 86 },
+    ],
+  },
+  {
+    title: 'Separación en casa',
+    description: 'Algo menos de la mitad dice separar sus residuos.',
+    total: 124,
+    data: [
+      { name: 'Sí separa', value: 42.7, count: 53 },
+      { name: 'No separa', value: 57.3, count: 71 },
+    ],
+  },
+  {
+    title: 'Categorías que separan',
+    description: 'Dos categorías es la respuesta más común.',
+    total: 78,
+    data: [
+      { name: 'Ninguna', value: 27 / 78 * 100, count: 27 },
+      { name: 'Dos', value: 35 / 78 * 100, count: 35 },
+      { name: 'Tres o más', value: 16 / 78 * 100, count: 16 },
+    ],
+  },
+];
+
 function SectionHeading({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
   return (
     <header className="mb-5 max-w-3xl">
@@ -45,62 +88,83 @@ function SectionHeading({ eyebrow, title, description }: { eyebrow: string; titl
   );
 }
 
-function MetricCard({ label, value, icon: Icon }: { label: string; value: string; icon: LucideIcon }) {
+function PieCard({
+  title,
+  description,
+  total,
+  data,
+}: (typeof PIE_DATA)[number]) {
   return (
-    <article className="rounded-card border border-border bg-surface p-4 shadow-soft sm:p-5">
-      <span className="grid size-10 place-items-center rounded-xl bg-primary-soft text-primary"><Icon className="size-5" aria-hidden="true" /></span>
-      <p className="mt-4 font-display text-2xl font-bold tabular-nums sm:text-3xl">{value}</p>
-      <p className="mt-1 text-sm text-muted">{label}</p>
+    <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
+      <h3 className="font-display text-lg font-semibold">{title}</h3>
+      <p className="mt-1 min-h-10 text-sm text-muted">{description}</p>
+      <div className="relative mt-2 h-48" role="img" aria-label={`${title}, sobre ${total} respuestas`}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={data} dataKey="value" nameKey="name" innerRadius="62%" outerRadius="86%" paddingAngle={2} stroke="none">
+              {data.map((item, index) => <Cell key={item.name} fill={PIE_COLORS[index]} />)}
+            </Pie>
+            <Tooltip formatter={(value) => [`${Number(value).toFixed(1).replace('.', ',')} %`, 'Respuestas']} />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <span className="font-display text-2xl font-bold tabular-nums">{total}</span>
+          <span className="text-xs text-muted">respuestas</span>
+        </div>
+      </div>
+      <ul className="mt-2 space-y-2" aria-label={`Referencias de ${title}`}>
+        {data.map((item, index) => (
+          <li key={item.name} className="flex items-center justify-between gap-3 text-sm">
+            <span className="inline-flex items-center gap-2"><i className="size-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[index] }} />{item.name}</span>
+            <span className="font-semibold tabular-nums">{item.value.toFixed(1).replace('.', ',')} % <span className="font-normal text-muted">({item.count})</span></span>
+          </li>
+        ))}
+      </ul>
     </article>
   );
 }
 
-function CountBars({
-  items,
-  total,
-  colorClass = 'bg-primary',
-}: {
-  items: { label: string; count: number }[];
-  total: number;
-  colorClass?: string;
-}) {
-  const max = Math.max(...items.map((item) => item.count));
-
+function MaterialBars() {
   return (
-    <ul className="mt-5 space-y-2.5" aria-label={`Distribución de ${total} respuestas`}>
-      {items.map((item) => {
-        const percent = (item.count / total) * 100;
-        return (
-          <li key={item.label} className="grid grid-cols-[5.5rem_minmax(0,1fr)_5.5rem] items-center gap-2 text-xs">
-            <span className="truncate text-muted">{item.label}</span>
-            <span aria-hidden="true" className="h-2.5 overflow-hidden rounded-full bg-surface-soft">
-              <span className={`block h-full rounded-full ${colorClass}`} style={{ width: `${(item.count / max) * 100}%` }} />
-            </span>
-            <span className="text-right tabular-nums">{item.count} <span className="text-muted">({percent.toFixed(1).replace('.', ',')}%)</span></span>
-          </li>
-        );
-      })}
-    </ul>
+    <ResponsiveContainer width="100%" height={330}>
+      <BarChart data={MATERIALS} layout="vertical" margin={{ top: 4, right: 12, bottom: 4, left: 0 }}>
+        <CartesianGrid stroke={COLORS.grid} strokeDasharray="3 3" horizontal={false} />
+        <XAxis type="number" domain={[0, 100]} tickFormatter={(value: number) => `${value}%`} tick={{ fill: COLORS.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
+        <YAxis type="category" dataKey="name" width={86} tick={{ fill: COLORS.muted, fontSize: 12 }} axisLine={false} tickLine={false} />
+        <Tooltip formatter={(value) => [`${Number(value).toFixed(1).replace('.', ',')} %`]} />
+        <Bar dataKey="always" name="Siempre" stackId="frequency" fill={COLORS.primary} />
+        <Bar dataKey="sometimes" name="A veces" stackId="frequency" fill={COLORS.accent} />
+        <Bar dataKey="never" name="Nunca" stackId="frequency" fill={COLORS.muted} radius={[0, 5, 5, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
   );
 }
 
-function MaterialChart() {
+function RatingBars() {
   return (
-    <div className="space-y-4" role="list" aria-label="Frecuencia de separación por material">
-      {MATERIALS.map((material) => (
-        <div key={material.name} role="listitem">
-          <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs sm:text-sm">
-            <span className="font-medium">{material.name} <span className="font-normal text-muted">(n={material.n})</span></span>
-            <span className="text-muted">Siempre {material.always}% · Índice {material.score.toFixed(2).replace('.', ',')}</span>
-          </div>
-          <div role="img" aria-label={`${material.name}: siempre ${material.always}%, a veces ${material.sometimes}%, nunca ${material.never}%`} className="flex h-3 overflow-hidden rounded-full bg-surface-soft">
-            <span className="bg-primary" style={{ width: `${material.always}%` }} />
-            <span className="bg-accent" style={{ width: `${material.sometimes}%` }} />
-            <span className="bg-border" style={{ width: `${material.never}%` }} />
-          </div>
-        </div>
-      ))}
-    </div>
+    <ResponsiveContainer width="100%" height={245}>
+      <BarChart data={WASTE_RATING} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
+        <CartesianGrid stroke={COLORS.grid} strokeDasharray="3 3" vertical={false} />
+        <XAxis dataKey="rating" tick={{ fill: COLORS.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
+        <YAxis allowDecimals={false} tick={{ fill: COLORS.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
+        <Tooltip formatter={(value) => [value, 'Respuestas']} labelFormatter={(label) => `Puntaje ${label} de 10`} />
+        <Bar dataKey="count" name="Respuestas" fill={COLORS.primary} radius={[5, 5, 0, 0]} maxBarSize={28} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function CourseMeans() {
+  return (
+    <ResponsiveContainer width="100%" height={260}>
+      <BarChart data={COURSES} layout="vertical" margin={{ top: 4, right: 20, bottom: 4, left: 0 }}>
+        <CartesianGrid stroke={COLORS.grid} strokeDasharray="3 3" horizontal={false} />
+        <XAxis type="number" domain={[0, 10]} tick={{ fill: COLORS.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
+        <YAxis type="category" dataKey="name" width={58} tick={{ fill: COLORS.muted, fontSize: 12 }} axisLine={false} tickLine={false} />
+        <Tooltip formatter={(value) => [Number(value).toFixed(2).replace('.', ','), 'Promedio']} />
+        <Bar dataKey="mean" name="Promedio" fill={COLORS.primary} radius={[0, 5, 5, 0]} maxBarSize={20} />
+      </BarChart>
+    </ResponsiveContainer>
   );
 }
 
@@ -109,148 +173,131 @@ export default function BlogSection() {
     <div className="pb-16 pt-24 sm:pt-28">
       <header className="relative isolate overflow-hidden bg-[#073c2c] text-white">
         <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-40 size-[28rem] rounded-full bg-emerald-300/10 blur-3xl" />
-        <div className="container-page relative py-14 sm:py-20">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-100"><BarChart3 className="size-4" /> Datos locales</span>
-          <h1 className="mt-5 max-w-3xl font-display text-4xl font-bold tracking-tight sm:text-6xl">Reciclaje en Córdoba, en números</h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-emerald-50/80 sm:text-lg">Una lectura clara de lo que respondieron 124 personas: hábitos, materiales y oportunidades para separar mejor.</p>
-          <p className="mt-5 text-xs text-emerald-100/70">Encuesta interna · 3 al 12 de noviembre de 2026</p>
+        <div className="container-page relative py-12 sm:py-16">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-100"><BarChart3 className="size-4" /> Encuesta local</span>
+          <h1 className="mt-5 max-w-3xl font-display text-4xl font-bold tracking-tight sm:text-6xl">Así reciclamos en Córdoba</h1>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-emerald-50/80 sm:text-lg">124 respuestas para entender qué separamos, qué nos cuesta y dónde podemos mejorar.</p>
+          <p className="mt-5 text-xs text-emerald-100/70">Encuesta interna · noviembre de 2026</p>
         </div>
       </header>
 
       <div className="container-page">
-        <section className="-mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumen de la encuesta">
-          <MetricCard icon={Users} label="Respuestas recibidas" value="124" />
-          <MetricCard icon={MapPin} label="Barrios escritos en respuestas" value="99" />
-          <MetricCard icon={Recycle} label="Separan residuos en casa" value="42,7 %" />
-          <MetricCard icon={Leaf} label="Promedio autodeclarado de generación" value="4,85 / 10" />
-        </section>
-
-        <section className="mt-14" aria-labelledby="habits-title">
-          <SectionHeading eyebrow="Hábitos y percepción" title="¿Cuánto separamos y cuánto creemos que generamos?" description="Las barras muestran la cantidad de respuestas en cada opción. La escala de generación es una percepción personal, no una medición de peso." />
-          <div className="grid gap-4 lg:grid-cols-2">
-            <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
-              <h3 className="font-display text-lg font-semibold">Percepción de residuos generados</h3>
-              <p className="mt-1 text-sm text-muted">Escala del 1 al 10 · media 4,85 · mediana y moda 5.</p>
-              <CountBars items={WASTE_RATING} total={124} />
-              <p className="mt-4 text-xs leading-relaxed text-muted">El 23,4 % eligió 3 o menos; el 9,7 % eligió 8 o más. Desvío estándar: 1,88; Q1–Q3: 4–6.</p>
-            </article>
-
-            <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
-              <h3 className="font-display text-lg font-semibold">¿Cuántas categorías separan?</h3>
-              <p className="mt-1 text-sm text-muted">La respuesta más frecuente fue 2 categorías (35 personas); 27 indicaron ninguna.</p>
-              <CountBars items={SORTING_CATEGORIES} total={78} colorClass="bg-accent" />
-              <p className="mt-4 text-xs leading-relaxed text-muted">78 respuestas válidas. Se dejaron fuera 41 respuestas vacías y 5 guiones; “ninguna” se contó como 0. Hay un valor 8 que podría ser atípico.</p>
-            </article>
+        <section className="mt-12" aria-labelledby="habits-title">
+          <SectionHeading eyebrow="De un vistazo" title="Hábitos de separación" description="Cada gráfico resume una pregunta de la encuesta. Pasá el cursor sobre las porciones para ver los valores." />
+          <div className="grid gap-4 lg:grid-cols-3">
+            {PIE_DATA.map((item) => <PieCard key={item.title} {...item} />)}
           </div>
+          <p className="mt-3 text-xs text-muted">El gráfico de categorías usa 78 respuestas válidas; “ninguna” se agrupó con cero.</p>
         </section>
 
         <section className="mt-14" aria-labelledby="materials-title">
-          <SectionHeading eyebrow="Por material" title="Qué se separa siempre, a veces o nunca" description="La frecuencia cambia bastante según el material. Orgánicos y plástico tienen los índices medios más altos; las latas son el material que menos personas separan siempre." />
+          <SectionHeading eyebrow="Por material" title="Qué se separa siempre, a veces o nunca" description="El plástico y los orgánicos lideran la separación constante; las latas son el desafío más marcado." />
           <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-7">
-            <div className="mb-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted" aria-label="Referencias del gráfico">
+            <div className="mb-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted" aria-label="Referencias del gráfico">
               <span className="inline-flex items-center gap-2"><i className="size-2.5 rounded-full bg-primary" />Siempre</span>
               <span className="inline-flex items-center gap-2"><i className="size-2.5 rounded-full bg-accent" />A veces</span>
-              <span className="inline-flex items-center gap-2"><i className="size-2.5 rounded-full bg-border" />Nunca</span>
+              <span className="inline-flex items-center gap-2"><i className="size-2.5 rounded-full bg-border-strong" />Nunca</span>
             </div>
-            <MaterialChart />
-            <p className="mt-5 text-xs leading-relaxed text-muted">Índice medio: Siempre = 2, A veces = 1, Nunca = 0. La cantidad de respuestas válidas varía por material (n=55–73); solo 82 de las 124 personas completaron al menos una respuesta sobre materiales.</p>
+            <MaterialBars />
+            <p className="text-xs leading-relaxed text-muted">El número de respuestas cambia por material; solo 82 personas completaron al menos uno.</p>
           </article>
         </section>
 
-        <section className="mt-14" aria-labelledby="context-title">
-          <SectionHeading eyebrow="Acceso y contexto" title="La infraestructura ayuda, pero no alcanza por sí sola" description="En esta muestra, tener tachos diferenciados cerca no aparece asociado a una gran diferencia en la separación dentro del hogar." />
-          <div className="grid gap-4 lg:grid-cols-2">
-            <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
-              <h3 className="font-display text-lg font-semibold">Tachos diferenciados en el barrio</h3>
-              <p className="mt-1 text-sm text-muted">38 personas (30,6 %) dijeron que sí; 86 (69,4 %) dijeron que no.</p>
-              <div className="mt-5 flex h-4 overflow-hidden rounded-full bg-surface-soft" role="img" aria-label="30,6 por ciento sí tiene tachos diferenciados en el barrio; 69,4 por ciento no">
-                <span className="bg-primary" style={{ width: '30.6%' }} /><span className="bg-border" style={{ width: '69.4%' }} />
-              </div>
-              <div className="mt-3 flex justify-between text-xs text-muted"><span>Sí 30,6 %</span><span>No 69,4 %</span></div>
-            </article>
-
-            <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
-              <h3 className="font-display text-lg font-semibold">Separación en casa, según acceso a tachos</h3>
-              <div className="mt-5 space-y-4">
-                <div><div className="flex justify-between gap-3 text-sm"><span>Con tachos diferenciados</span><strong>44,7 %</strong></div><div className="mt-2 h-3 overflow-hidden rounded-full bg-surface-soft"><span className="block h-full rounded-full bg-primary" style={{ width: '44.7%' }} /></div><p className="mt-1 text-xs text-muted">17 de 38 personas</p></div>
-                <div><div className="flex justify-between gap-3 text-sm"><span>Sin tachos diferenciados</span><strong>41,9 %</strong></div><div className="mt-2 h-3 overflow-hidden rounded-full bg-surface-soft"><span className="block h-full rounded-full bg-primary" style={{ width: '41.9%' }} /></div><p className="mt-1 text-xs text-muted">36 de 86 personas</p></div>
-              </div>
-              <p className="mt-4 text-xs leading-relaxed text-muted">La diferencia observada es pequeña: estos datos por sí solos no muestran una relación clara.</p>
-            </article>
-          </div>
+        <section className="mt-14" aria-labelledby="rating-title">
+          <SectionHeading eyebrow="Percepción" title="¿Cuánta basura sentimos que producimos?" description="La escala va de 1 a 10. La respuesta más común fue 5 y el promedio quedó cerca del punto medio." />
+          <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-7">
+            <RatingBars />
+          </article>
         </section>
 
-        <section className="mt-14" aria-labelledby="groups-title">
-          <SectionHeading eyebrow="Comparaciones" title="Cómo varía la respuesta entre grupos" description="Son promedios de percepción declarada en una escala de 1 a 10. Los grupos pequeños se muestran como referencia y no permiten conclusiones firmes." />
-          <div className="grid gap-4 lg:grid-cols-2">
-            <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
-              <h3 className="font-display text-lg font-semibold">Promedio por curso</h3>
-              <div className="mt-5 space-y-3">
-                {COURSES.map((course) => (
-                  <div key={course.name} className="grid grid-cols-[3rem_minmax(0,1fr)_6rem] items-center gap-3 text-xs sm:text-sm">
-                    <span className="text-muted">{course.name}</span>
-                    <span aria-hidden="true" className="h-3 overflow-hidden rounded-full bg-surface-soft"><span className="block h-full rounded-full bg-primary" style={{ width: `${course.mean * 10}%` }} /></span>
-                    <span className="text-right tabular-nums">{course.mean.toFixed(2).replace('.', ',')} <span className="text-muted">(n={course.count})</span></span>
-                  </div>
-                ))}
+        <details className="group mt-14 rounded-bento border border-border bg-surface shadow-soft">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 sm:p-6 [&::-webkit-details-marker]:hidden">
+            <span><span className="block text-sm font-semibold uppercase tracking-wider text-primary">Para profundizar</span><span className="mt-1 block font-display text-xl font-semibold sm:text-2xl">Más datos y contexto</span></span>
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-soft text-xl text-primary transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+          </summary>
+          <div className="space-y-10 border-t border-border p-5 sm:p-6">
+            <section aria-labelledby="course-means-title">
+              <h2 id="course-means-title" className="font-display text-lg font-semibold">Promedio de generación declarado por curso</h2>
+              <p className="mt-1 text-sm text-muted">Escala de 1 a 10. Los grupos con pocas respuestas se muestran solo como referencia.</p>
+              <div className="mt-4 max-w-3xl"><CourseMeans /></div>
+              <div className="grid gap-2 text-xs text-muted sm:grid-cols-2 lg:grid-cols-4">
+                {COURSES.map((course) => <p key={course.name}>{course.name}: media {course.mean.toFixed(2).replace('.', ',')} · desvío {course.sd.toFixed(2).replace('.', ',')} · n={course.count}</p>)}
               </div>
-              <p className="mt-4 text-xs leading-relaxed text-muted">Desvío estándar por grupo: 1.º 1,61; 2.º 1,98; 3.º 2,54; 4.º 1,72; 5.º 1,53; 6.º 1,15; profes 1,67.</p>
-            </article>
+            </section>
 
-            <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
-              <h3 className="font-display text-lg font-semibold">Promedio según separación en casa</h3>
-              <div className="mt-5 space-y-4">
-                <div><div className="flex justify-between gap-3 text-sm"><span>No separan (n=71)</span><strong>5,07 / 10</strong></div><div className="mt-2 h-3 overflow-hidden rounded-full bg-surface-soft"><span className="block h-full rounded-full bg-accent" style={{ width: '50.7%' }} /></div></div>
-                <div><div className="flex justify-between gap-3 text-sm"><span>Sí separan (n=53)</span><strong>4,57 / 10</strong></div><div className="mt-2 h-3 overflow-hidden rounded-full bg-surface-soft"><span className="block h-full rounded-full bg-primary" style={{ width: '45.7%' }} /></div></div>
+            <section aria-labelledby="home-sort-title">
+              <h2 id="home-sort-title" className="font-display text-lg font-semibold">Percepción según separación en casa</h2>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-card bg-surface-soft p-4"><p className="text-sm text-muted">No separan · n=71</p><p className="mt-1 font-display text-2xl font-bold">5,07 / 10</p></div>
+                <div className="rounded-card bg-primary-soft p-4"><p className="text-sm text-muted">Sí separan · n=53</p><p className="mt-1 font-display text-2xl font-bold">4,57 / 10</p></div>
               </div>
-              <div className="mt-5 rounded-card bg-surface-soft p-4 text-sm leading-relaxed text-muted">Quienes separan declararon un promedio algo menor, pero la diferencia no fue estadísticamente significativa (prueba t de Welch, p = 0,13). No alcanza para afirmar que separar reduzca la cantidad de residuos generados.</div>
-            </article>
-          </div>
-        </section>
+              <p className="mt-3 text-sm leading-relaxed text-muted">La diferencia no fue estadísticamente significativa (prueba t de Welch, p = 0,13); no alcanza para afirmar que separar reduzca la cantidad de residuos generados.</p>
+            </section>
 
-        <section className="mt-14" aria-labelledby="sample-title">
-          <SectionHeading eyebrow="La muestra" title="Quiénes respondieron" description="La encuesta reunió estudiantes de distintos cursos y cinco respuestas de docentes." />
-          <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {COURSES.map((course) => (
-                <div key={course.name} className="rounded-card bg-surface-soft p-4">
-                  <div className="flex items-baseline justify-between gap-3"><span className="font-semibold">{course.name === 'Profes' ? 'Profes' : `${course.name} curso`}</span><span className="text-sm tabular-nums text-muted">{course.count} · {course.percent}%</span></div>
-                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-border"><span className="block h-full rounded-full bg-primary" style={{ width: `${course.percent / 23.4 * 100}%` }} /></div>
+            <section aria-labelledby="descriptive-title">
+              <h2 id="descriptive-title" className="font-display text-lg font-semibold">Estadísticas completas</h2>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <div className="rounded-card border border-border p-4">
+                  <h3 className="font-semibold">Escala de residuos (1–10)</h3>
+                  <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <dt className="text-muted">Media</dt><dd className="text-right">4,85</dd>
+                    <dt className="text-muted">Mediana / moda</dt><dd className="text-right">5 / 5 (32)</dd>
+                    <dt className="text-muted">Desvío / varianza</dt><dd className="text-right">1,88 / 3,54</dd>
+                    <dt className="text-muted">Mínimo / máximo</dt><dd className="text-right">1 / 10</dd>
+                    <dt className="text-muted">Cuartiles Q1 / Q3</dt><dd className="text-right">4 / 6</dd>
+                    <dt className="text-muted">Asimetría</dt><dd className="text-right">0,28</dd>
+                    <dt className="text-muted">IC 95 % de la media</dt><dd className="text-right">4,52–5,19</dd>
+                  </dl>
                 </div>
-              ))}
-            </div>
-          </article>
-        </section>
+                <div className="rounded-card border border-border p-4">
+                  <h3 className="font-semibold">Cantidad de categorías</h3>
+                  <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <dt className="text-muted">Respuestas válidas</dt><dd className="text-right">78</dd>
+                    <dt className="text-muted">Media / mediana</dt><dd className="text-right">1,69 / 2</dd>
+                    <dt className="text-muted">Moda</dt><dd className="text-right">2 (35 casos)</dd>
+                    <dt className="text-muted">Desvío</dt><dd className="text-right">1,54</dd>
+                    <dt className="text-muted">Mínimo / máximo</dt><dd className="text-right">0 / 8</dd>
+                  </dl>
+                </div>
+              </div>
+            </section>
 
-        <section className="mt-14 grid gap-4 lg:grid-cols-2" aria-label="Detalles y calidad de los datos">
-          <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
-            <h2 className="font-display text-xl font-semibold">Detalle estadístico</h2>
-            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-card bg-surface-soft p-3"><dt className="text-xs text-muted">Escala de residuos · media</dt><dd className="mt-1 font-semibold">4,85</dd></div>
-              <div className="rounded-card bg-surface-soft p-3"><dt className="text-xs text-muted">Mediana / moda</dt><dd className="mt-1 font-semibold">5 / 5 (32)</dd></div>
-              <div className="rounded-card bg-surface-soft p-3"><dt className="text-xs text-muted">Desvío / varianza</dt><dd className="mt-1 font-semibold">1,88 / 3,54</dd></div>
-              <div className="rounded-card bg-surface-soft p-3"><dt className="text-xs text-muted">Mínimo / máximo</dt><dd className="mt-1 font-semibold">1 / 10</dd></div>
-              <div className="rounded-card bg-surface-soft p-3"><dt className="text-xs text-muted">IC del 95 % de la media</dt><dd className="mt-1 font-semibold">4,52 a 5,19</dd></div>
-              <div className="rounded-card bg-surface-soft p-3"><dt className="text-xs text-muted">Asimetría</dt><dd className="mt-1 font-semibold">0,28 · casi simétrica</dd></div>
-              <div className="rounded-card bg-surface-soft p-3"><dt className="text-xs text-muted">Categorías · media / mediana</dt><dd className="mt-1 font-semibold">1,69 / 2</dd></div>
-              <div className="rounded-card bg-surface-soft p-3"><dt className="text-xs text-muted">Categorías · moda</dt><dd className="mt-1 font-semibold">2 (35 respuestas)</dd></div>
-              <div className="rounded-card bg-surface-soft p-3"><dt className="text-xs text-muted">Categorías · desvío, min–max</dt><dd className="mt-1 font-semibold">1,54 · 0–8</dd></div>
-            </dl>
-          </article>
+            <section aria-labelledby="material-values-title">
+              <h2 id="material-values-title" className="font-display text-lg font-semibold">Detalle por material</h2>
+              <p className="mt-1 text-sm text-muted">El índice resume la frecuencia: Siempre = 2, A veces = 1, Nunca = 0.</p>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full min-w-[620px] text-left text-sm">
+                  <thead className="border-b border-border text-xs text-muted"><tr><th className="py-2 font-medium">Material</th><th className="py-2 text-right font-medium">n</th><th className="py-2 text-right font-medium">Siempre</th><th className="py-2 text-right font-medium">A veces</th><th className="py-2 text-right font-medium">Nunca</th><th className="py-2 text-right font-medium">Índice</th></tr></thead>
+                  <tbody>{MATERIALS.map((material) => <tr key={material.name} className="border-b border-border/60"><th className="py-2 font-medium">{material.name}</th><td className="py-2 text-right tabular-nums">{material.n}</td><td className="py-2 text-right tabular-nums">{material.always.toFixed(1).replace('.', ',')} %</td><td className="py-2 text-right tabular-nums">{material.sometimes.toFixed(1).replace('.', ',')} %</td><td className="py-2 text-right tabular-nums">{material.never.toFixed(1).replace('.', ',')} %</td><td className="py-2 text-right tabular-nums">{material.score.toFixed(2).replace('.', ',')}</td></tr>)}</tbody>
+                </table>
+              </div>
+            </section>
 
-          <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
-            <h2 className="font-display text-xl font-semibold">Cómo leer estos resultados</h2>
-            <ul className="mt-4 space-y-3 text-sm leading-relaxed text-muted">
-              <li><strong className="text-foreground">Es una encuesta interna y descriptiva.</strong> No representa necesariamente a toda Córdoba ni permite atribuir causas.</li>
-              <li><strong className="text-foreground">Los barrios no están normalizados.</strong> Hay 99 formas de barrio para 124 respuestas, con variantes de escritura.</li>
-              <li><strong className="text-foreground">Cada material tiene distinta cantidad de respuestas.</strong> Hubo celdas sin completar y solo 82 personas respondieron al menos uno.</li>
-              <li><strong className="text-foreground">Las respuestas abiertas se agruparon manualmente.</strong> La columna “Puntuación” está vacía porque el formulario no era un quiz.</li>
-              <li><strong className="text-foreground">En categorías separadas</strong>, dos personas que dijeron separar en casa dejaron la pregunta sin responder.</li>
-            </ul>
-          </article>
-        </section>
+            <section aria-labelledby="sample-title">
+              <h2 id="sample-title" className="font-display text-lg font-semibold">Quiénes participaron</h2>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full min-w-[420px] text-left text-sm">
+                  <thead className="border-b border-border text-xs text-muted"><tr><th className="py-2 font-medium">Curso</th><th className="py-2 text-right font-medium">Respuestas</th><th className="py-2 text-right font-medium">Porcentaje</th></tr></thead>
+                  <tbody>{COURSES.map((course) => <tr key={course.name} className="border-b border-border/60"><th className="py-2 font-medium">{course.name === 'Profes' ? 'Profes' : `${course.name} curso`}</th><td className="py-2 text-right tabular-nums">{course.count}</td><td className="py-2 text-right tabular-nums">{course.percent.toFixed(1).replace('.', ',')} %</td></tr>)}</tbody>
+                </table>
+              </div>
+            </section>
 
-        <p className="mt-8 flex items-start gap-2 text-xs leading-relaxed text-muted"><Leaf className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /> Fuente: resumen estadístico de la encuesta interna del proyecto Mas y mejor reciclaje · Córdoba. Resultados relevados del 3 al 12 de noviembre de 2026.</p>
+            <section aria-labelledby="quality-title">
+              <h2 id="quality-title" className="font-display text-lg font-semibold">Alcance y calidad de los datos</h2>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-muted">
+                <li>La encuesta interna se realizó del 3 al 12 de noviembre de 2026; sus resultados son descriptivos y no representan necesariamente a toda Córdoba.</li>
+                <li>Se registraron 99 formas de barrio para 124 respuestas; hay nombres con variantes de escritura que habría que unificar antes de comparar por barrio.</li>
+                <li>La pregunta sobre materiales tuvo una cantidad distinta de respuestas por material; solo 82 personas respondieron al menos uno.</li>
+                <li>Para el recuento de categorías se descartaron 41 respuestas vacías y 5 guiones; “ninguna” se contó como cero. Dos personas que separan en casa dejaron esa pregunta vacía.</li>
+                <li>La columna “Puntuación” está vacía porque el formulario no era un quiz. Las respuestas abiertas sobre residuos se agruparon manualmente para el resumen.</li>
+                <li>La diferencia entre cursos y el valor máximo de 8 categorías deben leerse con cautela; algunos grupos tienen pocos casos y ese valor puede ser atípico.</li>
+              </ul>
+            </section>
+          </div>
+        </details>
+
+        <p className="mt-7 flex items-start gap-2 text-xs leading-relaxed text-muted"><Leaf className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /> Fuente: estadísticas descriptivas de la encuesta interna de Mas y mejor reciclaje · Córdoba.</p>
       </div>
     </div>
   );
