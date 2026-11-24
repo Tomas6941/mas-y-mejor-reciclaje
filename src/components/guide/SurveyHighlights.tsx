@@ -9,6 +9,49 @@ const MATERIALS = [
   { name: 'Latas', n: 55, always: 16.4, sometimes: 21.8, never: 61.8 },
 ];
 
+const WASTE_RATING = [4, 8, 17, 24, 32, 15, 12, 9, 1, 2].map((count, index) => ({
+  label: String(index + 1),
+  count,
+}));
+
+const SORTING_CATEGORIES = [
+  { label: '0 / ninguna', count: 27 },
+  { label: '2 categorías', count: 35 },
+  { label: '3 categorías', count: 8 },
+  { label: '4 categorías', count: 5 },
+  { label: '5 categorías', count: 2 },
+  { label: '8 categorías', count: 1 },
+];
+
+function CountBars({
+  items,
+  total,
+  colorClass = 'bg-primary',
+}: {
+  items: { label: string; count: number }[];
+  total: number;
+  colorClass?: string;
+}) {
+  const max = Math.max(...items.map((item) => item.count));
+
+  return (
+    <ul className="mt-5 space-y-2.5" aria-label={`Distribución de ${total} respuestas`}>
+      {items.map((item) => {
+        const percent = (item.count / total) * 100;
+        return (
+          <li key={item.label} className="grid grid-cols-[5.5rem_minmax(0,1fr)_5.5rem] items-center gap-2 text-xs">
+            <span className="truncate text-muted">{item.label}</span>
+            <span aria-hidden="true" className="h-2.5 overflow-hidden rounded-full bg-surface-soft">
+              <span className={`block h-full rounded-full ${colorClass}`} style={{ width: `${(item.count / max) * 100}%` }} />
+            </span>
+            <span className="text-right tabular-nums">{item.count} <span className="text-muted">({percent.toFixed(1).replace('.', ',')}%)</span></span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function SplitBar({ yes, no, label }: { yes: number; no: number; label: string }) {
   return (
     <div
@@ -83,15 +126,19 @@ export function SurveyHighlights() {
         </article>
       </div>
 
-      <div className="mt-4 grid gap-3 rounded-card border border-border bg-surface-soft p-4 sm:grid-cols-2 sm:gap-5 sm:p-5">
-        <div>
-          <p className="font-display text-xl font-bold tabular-nums">4,85 <span className="text-sm font-medium text-muted">/ 10</span></p>
-          <p className="mt-1 text-xs text-muted">Promedio de residuos que las personas dicen generar.</p>
-        </div>
-        <div>
-          <p className="font-display text-xl font-bold">2 categorías</p>
-          <p className="mt-1 text-xs text-muted">La respuesta más frecuente sobre cuántas separan (35 personas).</p>
-        </div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
+          <h3 className="font-display text-lg font-semibold">¿Cuánta basura sentís que producís?</h3>
+          <p className="mt-1 text-sm text-muted">Escala de 1 a 10, con 124 respuestas. El promedio fue 4,85 y la respuesta más común, 5.</p>
+          <CountBars items={WASTE_RATING} total={124} />
+        </article>
+
+        <article className="rounded-bento border border-border bg-surface p-5 shadow-soft sm:p-6">
+          <h3 className="font-display text-lg font-semibold">¿En cuántas categorías separan?</h3>
+          <p className="mt-1 text-sm text-muted">La respuesta más común fue 2 categorías, aunque 27 personas indicaron ninguna.</p>
+          <CountBars items={SORTING_CATEGORIES} total={78} colorClass="bg-accent" />
+          <p className="mt-4 text-xs leading-relaxed text-muted">78 respuestas válidas. Se excluyeron 41 vacías y 5 guiones; “ninguna” se sumó a 0.</p>
+        </article>
       </div>
 
       <p className="mt-3 text-xs leading-relaxed text-muted">En la pregunta por material hubo entre 55 y 73 respuestas válidas; la cantidad varía por material. La encuesta es interna y descriptiva, y no representa necesariamente a toda la ciudad.</p>
