@@ -182,6 +182,29 @@ export const reportRoutes: FastifyPluginAsync<ReportRoutesOptions> = async (app,
         throw new AppError(409, 'REPORT_ALREADY_REVIEWED', 'Ese reporte ya fue revisado.');
       }
 
+      if (decision === 'approved' && updated.category === 'container_status') {
+        if (!updated.pointId) throw new AppError(409, 'REPORT_POINT_MISSING', 'El reporte no tiene un punto asociado.');
+        if (updated.type !== 'available' && updated.type !== 'full' && updated.type !== 'damaged') {
+          throw new AppError(409, 'REPORT_STATUS_INVALID', 'El reporte no contiene un estado de contenedor válido.');
+        }
+
+        const [updatedPoint] = await tx
+          .update(points)
+          .set({ status: updated.type, updatedAt: now })
+          .where(and(eq(points.id, updated.pointId), eq(points.isActive, true)))
+          .returning({ id: points.id, status: points.status });
+
+        if (!updatedPoint) throw new AppError(409, 'REPORT_POINT_UNAVAILABLE', 'El punto ya no está disponible en el mapa.');
+
+        await tx.insert(auditLog).values({
+          actorId: request.authUser!.id,
+          action: 'point.status_updated_from_report',
+          entityType: 'point',
+          entityId: updatedPoint.id,
+          details: { reportId: updated.id, status: updatedPoint.status },
+        });
+      }
+
       if (decision === 'approved' && updated.category === 'suggestion') {
         if (updated.type === 'move_point') {
           if (!updated.pointId || updated.suggestedLatitude === null || updated.suggestedLongitude === null) throw new AppError(409, 'SUGGESTION_LOCATION_MISSING', 'La sugerencia no tiene coordenadas para aplicar.');
