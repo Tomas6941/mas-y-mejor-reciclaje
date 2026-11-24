@@ -26,7 +26,6 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { key: 'home', hash: '#/', label: 'Inicio', shortLabel: 'Inicio', icon: House, primary: true },
   { key: 'map', hash: '#/mapa', label: 'Mapa', shortLabel: 'Mapa', icon: Map, primary: true },
-  { key: 'guide', hash: '#/guia', label: 'Guía', shortLabel: 'Guía', icon: Recycle, primary: true },
   {
     key: 'calendar',
     hash: '#/calendario',
@@ -35,6 +34,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: CalendarCheck2,
     primary: true,
   },
+  { key: 'guide', hash: '#/guia', label: 'Guía', shortLabel: 'Guía', icon: Recycle, primary: true },
   {
     key: 'tracking',
     hash: '#/seguimiento',
