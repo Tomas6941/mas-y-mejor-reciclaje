@@ -3,6 +3,7 @@ import {
   CalendarCheck2,
   House,
   Map,
+  Newspaper,
   Recycle,
   ShieldCheck,
   TrendingUp,
@@ -10,7 +11,7 @@ import {
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 
-export type RouteKey = 'home' | 'map' | 'guide' | 'calendar' | 'tracking' | 'profile' | 'report' | 'admin' | 'legal';
+export type RouteKey = 'home' | 'map' | 'guide' | 'calendar' | 'blog' | 'tracking' | 'profile' | 'report' | 'admin' | 'legal';
 
 export interface NavItem {
   key: RouteKey;
@@ -34,12 +35,13 @@ export const NAV_ITEMS: NavItem[] = [
     icon: CalendarCheck2,
     primary: true,
   },
-  { key: 'guide', hash: '#/guia', label: 'Guía', shortLabel: 'Guía', icon: Recycle, primary: true },
+  { key: 'guide', hash: '#/guia', label: 'Aprendé', shortLabel: 'Aprendé', icon: Recycle, primary: true },
+  { key: 'blog', hash: '#/blog', label: 'Blog', shortLabel: 'Blog', icon: Newspaper, primary: true },
   {
     key: 'tracking',
     hash: '#/seguimiento',
-    label: 'Seguimiento',
-    shortLabel: 'Impacto',
+    label: 'Mi seguimiento',
+    shortLabel: 'Mi seg.',
     icon: TrendingUp,
     primary: true,
   },
@@ -72,6 +74,7 @@ export const ROUTE_COMPONENTS: Record<RouteKey, () => Promise<{ default: Compone
   home: () => import('@/components/home/HomeSection'),
   map: () => import('@/components/map/MapSection'),
   guide: () => import('@/components/guide/GuideSection'),
+  blog: () => import('@/components/blog/BlogSection'),
   calendar: () => import('@/components/calendar/CalendarSection'),
   tracking: () => import('@/components/tracking/TrackingSection'),
   profile: () => import('@/components/profile/ProfileSection'),
@@ -97,6 +100,8 @@ export function parseHash(hash: string): { route: RouteKey; params: URLSearchPar
       return { route: 'map', params };
     case 'guia':
       return { route: 'guide', params };
+    case 'blog':
+      return { route: 'blog', params };
     case 'calendario':
       return { route: 'calendar', params };
     case 'seguimiento':

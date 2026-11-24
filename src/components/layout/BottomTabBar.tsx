@@ -17,7 +17,7 @@ export function BottomTabBar() {
       className="glass fixed inset-x-0 bottom-0 z-40 border-t pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-1.5 lg:hidden"
     >
       <ul className="mx-auto flex w-full max-w-md items-end gap-0 px-1">
-        {TABS.slice(0, 2).map((item) => (
+        {TABS.slice(0, 3).map((item) => (
           <TabLink key={item.key} item={item} active={route === item.key} />
         ))}
 
@@ -35,7 +35,7 @@ export function BottomTabBar() {
           )}
         </li>
 
-        {TABS.slice(2).map((item) => (
+        {TABS.slice(3).map((item) => (
           <TabLink key={item.key} item={item} active={route === item.key} />
         ))}
       </ul>

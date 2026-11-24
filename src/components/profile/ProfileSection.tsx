@@ -112,7 +112,7 @@ export default function ProfileSection() {
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-soft"><div className="h-full rounded-full bg-primary" style={{ width: `${achievement.progress}%` }} /></div>
                 <p className="mt-2 text-xs text-muted">{achievement.progressText}{achievement.unlocked ? ' · Desbloqueado' : ''}</p>
               </div>)}
-              <Button asChild variant="ghost" size="sm"><a href="#/seguimiento">Ver seguimiento completo <ArrowRight size={15} /></a></Button>
+              <Button asChild variant="ghost" size="sm"><a href="#/seguimiento">Ver mi seguimiento <ArrowRight size={15} /></a></Button>
             </CardContent>
           </Card>
 
