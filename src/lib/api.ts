@@ -27,10 +27,11 @@ const API_BASE = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/$/, '');
 
 export async function apiRequest<T>(
   path: string,
-  options: { method?: string; body?: unknown; signal?: AbortSignal } = {},
+  options: { method?: string; body?: unknown; signal?: AbortSignal; cache?: RequestCache } = {},
 ): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     method: options.method ?? (options.body === undefined ? 'GET' : 'POST'),
+    cache: options.cache,
     credentials: 'include',
     headers: options.body === undefined ? undefined : { 'content-type': 'application/json' },
     body: options.body === undefined ? undefined : JSON.stringify(options.body),

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { usePointsStore } from '@/store/pointsStore';
 import { fetchAdminReportImage, fetchAdminReports, reviewAdminReport, type AdminReport, type AdminReportStatus } from './admin-api';
 import { adminGlass } from './admin-style';
 
@@ -41,7 +42,14 @@ export function AdminReportsPanel({ onUpdated }: { onUpdated: () => void }) {
     setBusyId(report.id);
     try {
       await reviewAdminReport(report.id, decision);
-      toast.success(decision === 'approved' ? (report.category === 'suggestion' ? 'Sugerencia resuelta y aplicada al mapa.' : 'Reporte aprobado.') : (report.category === 'suggestion' ? 'Sugerencia cerrada sin aplicar.' : 'Reporte rechazado.'));
+      if (decision === 'approved') {
+        try {
+          await usePointsStore.getState().fetchPoints();
+        } catch {
+          toast.error('El reporte fue aprobado, pero no pudimos actualizar los datos del mapa.');
+        }
+      }
+      toast.success(decision === 'approved' ? (report.category === 'suggestion' ? 'Sugerencia resuelta y aplicada al mapa.' : 'Reporte aprobado y aplicado al mapa.') : (report.category === 'suggestion' ? 'Sugerencia cerrada sin aplicar.' : 'Reporte rechazado.'));
       await load();
       onUpdated();
     } catch (cause) {
