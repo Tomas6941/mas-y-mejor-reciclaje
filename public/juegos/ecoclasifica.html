@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>EcoClasifica - Aprende a Reciclar por Niveles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-display: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        html, body {
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(135deg, #ecfdf5 0%, #e0f2fe 50%, #f0fdf4 100%);
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+            touch-action: manipulation;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        h1, h2, h3, .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Cinta transportadora animada */
+        .conveyor-belt {
+            background-color: #1e293b;
+            background-image: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 28px,
+                rgba(15, 23, 42, 0.55) 28px,
+                rgba(15, 23, 42, 0.55) 36px
+            );
+            background-size: 36px 100%;
+            animation: beltMove linear infinite;
+            animation-duration: var(--belt-speed, 2s);
+            box-shadow: inset 0 8px 16px rgba(0, 0, 0, 0.45), inset 0 -8px 16px rgba(0, 0, 0, 0.45);
+        }
+
+        .conveyor-paused {
+            animation-play-state: paused !important;
+        }
+
+        @keyframes beltMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 36px 0; }
+        }
+
+        /* Rodillos giratorios */
+        .roller {
+            background: conic-gradient(from 0deg, #64748b, #94a3b8, #475569, #cbd5e1, #64748b);
+            animation: spinRoller linear infinite;
+            animation-duration: var(--belt-speed, 2s);
+        }
+
+        @keyframes spinRoller {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Tarjeta de residuo en la cinta */
+        .waste-item {
+            transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s ease;
+            touch-action: none;
+            will-change: left, top, transform;
+        }
+
+        .waste-item.active-target {
+            box-shadow: 0 0 0 3.5px #10b981, 0 10px 20px -4px rgba(16, 185, 129, 0.45);
+            transform: translateY(-50%) scale(1.06);
+            z-index: 30;
+        }
+
+        .waste-item.dragging {
+            transition: none !important;
+            transform: translate(-50%, -50%) scale(1.15) rotate(4deg) !important;
+            box-shadow: 0 22px 32px -5px rgba(0, 0, 0, 0.35);
+            z-index: 50 !important;
+            cursor: grabbing;
+        }
+
+        /* Contenedores interactivos: hover solo en dispositivos con puntero fino para evitar pegajosidad táctil */
+        .bin-card {
+            transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+            touch-action: manipulation;
+        }
+
+        @media (hover: hover) {
+            .bin-card:not(.bin-locked):hover {
+                transform: translateY(-6px) scale(1.03);
+            }
+            .bin-card:not(.bin-locked):hover .bin-lid {
+                transform: rotate(-14deg) translateY(-2px);
+            }
+        }
+
+        .bin-card:not(.bin-locked).drag-over {
+            transform: translateY(-7px) scale(1.04);
+            box-shadow: 0 0 0 3px #ffffff, 0 14px 24px -4px rgba(0, 0, 0, 0.35);
+        }
+
+        .bin-card:not(.bin-locked):active {
+            transform: translateY(2px) scale(0.96);
+        }
+
+        .bin-lid {
+            transition: transform 0.2s ease;
+            transform-origin: left bottom;
+        }
+
+        .bin-card:not(.bin-locked).drag-over .bin-lid {
+            transform: rotate(-14deg) translateY(-2px);
+        }
+
+        .bin-locked {
+            filter: grayscale(0.88) opacity(0.52);
+            cursor: not-allowed;
+        }
+
+        /* Animación de puntos flotantes */
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.85); }
+            50% { opacity: 1; transform: translateY(-26px) scale(1.1); }
+            100% { opacity: 0; transform: translateY(-52px) scale(0.95); }
+        }
+
+        .floating-feedback {
+            animation: floatUp 1.1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        /* Sacudida por error */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
+        .shake-anim {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        .smooth-bar {
+            transition: width 0.35s ease-out;
+        }
+
+        /* Adaptación compacta para celulares en horizontal (landscape) o pantallas de baja altura */
+        @media (max-height: 540px) {
+            #mainHeader {
+                padding-top: 0.3rem;
+                padding-bottom: 0.3rem;
+            }
+            #logoBox {
+                width: 2rem;
+                height: 2rem;
+            }
+            #playScreen {
+                gap: 0.35rem;
+                padding-top: 0.2rem;
+                padding-bottom: 0.2rem;
+            }
+            #eduBanner {
+                padding: 0.4rem 0.65rem;
+            }
+            #eduIconBox {
+                width: 2rem;
+                height: 2rem;
+                font-size: 1.1rem;
+            }
+            #eduText {
+                font-size: 0.72rem;
+                line-height: 1.15;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            #conveyorWrapper {
+                height: 5.75rem;
+                padding: 0.35rem;
+                border-width: 2px;
+            }
+            #binsGrid {
+                grid-template-columns: repeat(7, minmax(0, 1fr));
+                gap: 0.35rem;
+            }
+            .bin-card {
+                min-height: 58px !important;
+                padding: 0.3rem 0.2rem !important;
+                border-radius: 0.85rem !important;
+            }
+            .bin-lid {
+                display: none;
+            }
+            .bin-icon {
+                width: 1.25rem !important;
+                height: 1.25rem !important;
+                margin: 0 !important;
+            }
+            .bin-sublabel {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-[100dvh] flex flex-col text-slate-800">
+
+    <!-- ================= BARRA SUPERIOR (HEADER) ================= -->
+    <header class="w-full bg-white/90 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-40 shadow-sm">
+        <div id="mainHeader" class="max-w-6xl mx-auto px-2.5 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-1.5 sm:gap-2">
+            <!-- Logo SVG personalizado -->
+            <div class="flex items-center gap-2 cursor-pointer shrink-0" onclick="goHome()">
+                <div id="logoBox" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-200">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-700 to-teal-600 bg-clip-text text-transparent leading-none">
+                        EcoClasifica
+                    </h1>
+                    <p class="text-[11px] sm:text-xs text-slate-500 font-medium hidden sm:block">Aventura educativa por niveles</p>
+                </div>
+            </div>
+
+            <!-- HUD en partida -->
+            <div id="gameHud" class="hidden flex items-center gap-1 sm:gap-3 min-w-0">
+                <!-- Vidas -->
+                <div class="flex items-center bg-rose-50 border border-rose-200 px-1.5 sm:px-2.5 py-1 rounded-xl shrink-0" title="Vidas restantes">
+                    <div id="livesDisplay" class="flex gap-0.5 text-[10px] sm:text-sm tracking-tighter">❤️❤️❤️❤️❤️</div>
+                </div>
+
+                <!-- Nivel -->
+                <div class="bg-indigo-50 border border-indigo-200 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-center shrink-0">
+                    <span class="text-[9px] sm:text-[10px] uppercase font-bold text-indigo-500 block leading-none">Nivel</span>
+                    <span id="levelDisplay" class="font-display font-extrabold text-xs sm:text-base text-indigo-700 leading-tight">1</span>
+                </div>
+
+                <!-- Puntaje y Racha -->
+                <div class="bg-emerald-50 border border-emerald-200 px-2 sm:px-3 py-0.5 sm:py-1 rounded-xl text-center shrink-0">
+                    <span class="text-[9px] sm:text-[10px] uppercase font-bold text-emerald-600 block leading-none">Puntos</span>
+                    <div class="flex items-center gap-1 justify-center leading-tight">
+                        <span id="scoreDisplay" class="font-display font-extrabold text-xs sm:text-base text-emerald-800">0</span>
+                        <span id="streakBadge" class="hidden text-[9px] sm:text-[10px] font-bold bg-amber-400 text-amber-950 px-1 sm:px-1.5 rounded-full">x2</span>
+                    </div>
+                </div>
+
+                <!-- Impacto CO2 -->
+                <div class="hidden md:flex items-center gap-1.5 bg-teal-50 border border-teal-200 px-3 py-1 rounded-xl" title="Dióxido de carbono evitado">
+                    <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-teal-600 block leading-none">CO₂ Evitado</span>
+                        <span id="co2Display" class="font-display font-extrabold text-sm text-teal-800">0.00 kg</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles de Audio y Pausa -->
+            <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+                <button id="pauseBtn" onclick="togglePause()" class="hidden p-2 sm:p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Pausar / Reanudar (P o Esc)">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </button>
+                <button id="audioToggleBtn" onclick="toggleAudio()" class="p-2 sm:p-2.5 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-800 transition" title="Silenciar / Activar sonido">
+                    <svg id="soundOnIcon" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    </svg>
+                    <svg id="soundOffIcon" class="w-4 h-4 sm:w-5 sm:h-5 hidden text-slate-500" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= CONTENEDOR PRINCIPAL ================= -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-2.5 sm:px-6 py-2.5 sm:py-4 flex flex-col justify-between">
+
+        <!-- 1. PANTALLA DE INICIO -->
+        <section id="startScreen" class="my-auto py-2 sm:py-3 flex flex-col items-center text-center">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs sm:text-sm font-bold mb-3 shadow-sm">
+                <span>🌱 5 Niveles Temáticos • Desbloqueo Progresivo</span>
+            </div>
+            <h2 class="text-2xl sm:text-5xl font-extrabold text-slate-900 tracking-tight max-w-2xl leading-tight">
+                Domina el arte de <span class="text-emerald-600">separar residuos</span> nivel por nivel
+            </h2>
+            <p class="text-slate-600 text-sm sm:text-base max-w-2xl mt-2.5 mb-5">
+                Comienza con los residuos cotidianos del hogar y desbloquea nuevos contenedores a medida que avanzas. ¡Cada acierto evita emisiones de CO₂ y ahorra energía!
+            </p>
+
+            <!-- Mapa de Progresión de Niveles -->
+            <div class="w-full max-w-5xl bg-white/95 backdrop-blur rounded-3xl p-4 sm:p-5 shadow-lg border border-emerald-100 mb-4">
+                <h3 class="text-xs uppercase tracking-wider font-bold text-emerald-700 mb-3">Ruta de Progresión por Niveles</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 text-left">
+                    <div class="p-3 rounded-2xl bg-emerald-50/80 border border-emerald-200">
+                        <span class="text-[11px] font-extrabold text-emerald-700 uppercase">Nivel 1 • Meta: 8</span>
+                        <h4 class="font-display font-bold text-slate-900 text-sm mt-0.5">Primeros Pasos en Casa</h4>
+                        <p class="text-[11px] text-slate-600 mt-1">Activos: <strong>Orgánicos, Plásticos y Papel/Cartón</strong>.</p>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-sky-50/80 border border-sky-200">
+                        <span class="text-[11px] font-extrabold text-sky-700 uppercase">Nivel 2 • Meta: 12</span>
+                        <h4 class="font-display font-bold text-slate-900 text-sm mt-0.5">Envases y Empaques</h4>
+                        <p class="text-[11px] text-slate-600 mt-1">Desbloquea <strong>Vidrio (4)</strong> y <strong>Metales (5)</strong>.</p>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-purple-50/80 border border-purple-200">
+                        <span class="text-[11px] font-extrabold text-purple-700 uppercase">Nivel 3 • Meta: 15</span>
+                        <h4 class="font-display font-bold text-slate-900 text-sm mt-0.5">Tecnología y Cuidado</h4>
+                        <p class="text-[11px] text-slate-600 mt-1">Desbloquea <strong>Electrónicos (6)</strong> y <strong>Delicados (7)</strong>.</p>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-amber-50/80 border border-amber-200">
+                        <span class="text-[11px] font-extrabold text-amber-700 uppercase">Nivel 4 • Meta: 20</span>
+                        <h4 class="font-display font-bold text-slate-900 text-sm mt-0.5">Planta de Clasificación</h4>
+                        <p class="text-[11px] text-slate-600 mt-1">Los <strong>7 contenedores</strong> con cinta más rápida.</p>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-rose-50/80 border border-rose-200 sm:col-span-2 lg:col-span-1">
+                        <span class="text-[11px] font-extrabold text-rose-700 uppercase">Nivel 5+ • +25/etapa</span>
+                        <h4 class="font-display font-bold text-slate-900 text-sm mt-0.5">Modo Experto Ambiental</h4>
+                        <p class="text-[11px] text-slate-600 mt-1">Velocidad máxima y bonificación extra de puntos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guía Visual de los 7 Contenedores -->
+            <div class="w-full max-w-5xl bg-white/95 backdrop-blur rounded-3xl p-4 sm:p-5 shadow-xl shadow-slate-200/60 border border-slate-100 mb-6">
+                <h3 class="text-xs uppercase tracking-wider font-bold text-slate-400 mb-3">Los 7 Contenedores Oficiales y sus Teclas</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 text-left">
+                    <!-- 1. Orgánicos -->
+                    <div class="p-3 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="w-7 h-7 rounded-lg bg-amber-800 text-white flex items-center justify-center" id="guideIcon-organico"></span>
+                            <span class="text-[11px] font-extrabold bg-amber-800 text-white px-2 py-0.5 rounded-md">Tecla 1</span>
+                        </div>
+                        <h4 class="font-display font-bold text-amber-950 text-xs sm:text-sm">Orgánicos</h4>
+                        <p class="text-[11px] text-amber-900 mt-1 leading-snug">Frutas, verduras, cáscaras de huevo, yerba/café, poda.</p>
+                    </div>
+                    <!-- 2. Plásticos -->
+                    <div class="p-3 rounded-2xl bg-blue-50 border border-blue-200 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center" id="guideIcon-plastico"></span>
+                            <span class="text-[11px] font-extrabold bg-blue-600 text-white px-2 py-0.5 rounded-md">Tecla 2</span>
+                        </div>
+                        <h4 class="font-display font-bold text-blue-950 text-xs sm:text-sm">Plásticos</h4>
+                        <p class="text-[11px] text-blue-800 mt-1 leading-snug">Botellas PET, potes de yogur, bolsas, envases limpieza.</p>
+                    </div>
+                    <!-- 3. Papel y Cartón -->
+                    <div class="p-3 rounded-2xl bg-yellow-50 border border-yellow-300 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="w-7 h-7 rounded-lg bg-yellow-500 text-yellow-950 flex items-center justify-center" id="guideIcon-papel"></span>
+                            <span class="text-[11px] font-extrabold bg-yellow-500 text-yellow-950 px-2 py-0.5 rounded-md">Tecla 3</span>
+                        </div>
+                        <h4 class="font-display font-bold text-yellow-950 text-xs sm:text-sm">Papel y Cartón</h4>
+                        <p class="text-[11px] text-yellow-900 mt-1 leading-snug">Cajas, hojas de cuaderno, diarios, revistas, tubos.</p>
+                    </div>
+                    <!-- 4. Vidrio -->
+                    <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center" id="guideIcon-vidrio"></span>
+                            <span class="text-[11px] font-extrabold bg-emerald-600 text-white px-2 py-0.5 rounded-md">Tecla 4</span>
+                        </div>
+                        <h4 class="font-display font-bold text-emerald-950 text-xs sm:text-sm">Vidrio</h4>
+                        <p class="text-[11px] text-emerald-800 mt-1 leading-snug">Botellas de vidrio, frascos de mermelada y perfumes.</p>
+                    </div>
+                    <!-- 5. Metales -->
+                    <div class="p-3 rounded-2xl bg-slate-100 border border-slate-300 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="w-7 h-7 rounded-lg bg-slate-500 text-white flex items-center justify-center" id="guideIcon-metal"></span>
+                            <span class="text-[11px] font-extrabold bg-slate-500 text-white px-2 py-0.5 rounded-md">Tecla 5</span>
+                        </div>
+                        <h4 class="font-display font-bold text-slate-900 text-xs sm:text-sm">Metales</h4>
+                        <p class="text-[11px] text-slate-700 mt-1 leading-snug">Latas aluminio, conservas, papel aluminio, aerosoles.</p>
+                    </div>
+                    <!-- 6. Electrónicos -->
+                    <div class="p-3 rounded-2xl bg-purple-50 border border-purple-200 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="w-7 h-7 rounded-lg bg-purple-600 text-white flex items-center justify-center" id="guideIcon-electronico"></span>
+                            <span class="text-[11px] font-extrabold bg-purple-600 text-white px-2 py-0.5 rounded-md">Tecla 6</span>
+                        </div>
+                        <h4 class="font-display font-bold text-purple-950 text-xs sm:text-sm">Electrónicos</h4>
+                        <p class="text-[11px] text-purple-800 mt-1 leading-snug">Celulares viejos, cables, cargadores, teclados/mouse.</p>
+                    </div>
+                    <!-- 7. Delicados -->
+                    <div class="col-span-2 sm:col-span-2 lg:col-span-1 p-3 rounded-2xl bg-red-50 border border-red-200 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="w-7 h-7 rounded-lg bg-red-600 text-white flex items-center justify-center" id="guideIcon-delicado"></span>
+                            <span class="text-[11px] font-extrabold bg-red-600 text-white px-2 py-0.5 rounded-md">Tecla 7</span>
+                        </div>
+                        <h4 class="font-display font-bold text-red-950 text-xs sm:text-sm">Delicados</h4>
+                        <p class="text-[11px] text-red-800 mt-1 leading-snug">Pilas, baterías, focos, remedios vencidos, solventes.</p>
+                    </div>
+                </div>
+
+                <!-- Controles -->
+                <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap justify-center gap-3 sm:gap-4 text-xs text-slate-500">
+                    <span class="flex items-center gap-1.5">⌨️ <strong>PC:</strong> Teclas 1 al 7 o Clic</span>
+                    <span class="flex items-center gap-1.5">👆 <strong>Celular / Tablet:</strong> Toca el residuo o su contenedor</span>
+                    <span class="flex items-center gap-1.5">✋ <strong>Arrastrar:</strong> Mueve el residuo al tacho</span>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="group relative inline-flex items-center gap-3 px-7 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-display font-bold text-base sm:text-xl shadow-xl shadow-emerald-600/30 transition-all hover:scale-105 active:scale-95">
+                <span>Comenzar Aventura</span>
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                </svg>
+            </button>
+        </section>
+
+        <!-- 2. PANTALLA DE JUEGO ACTIVO -->
+        <section id="playScreen" class="hidden flex-1 flex flex-col justify-between gap-2 sm:gap-4 py-0.5">
+
+            <!-- Banner Educativo Dinámico en Tiempo Real -->
+            <div id="eduBanner" class="w-full rounded-2xl bg-white/95 border border-emerald-200 p-2.5 sm:p-4 shadow-md transition-all duration-300 flex items-center gap-2.5 sm:gap-4">
+                <div id="eduIconBox" class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 text-lg sm:text-2xl">
+                    💡
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-2">
+                        <span id="eduTag" class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-600 truncate">Nivel 1: Primeros Pasos en Casa</span>
+                        <span class="md:hidden text-[10px] sm:text-xs font-bold text-teal-700 bg-teal-50 px-1.5 sm:px-2 py-0.5 rounded-md shrink-0">🌍 <span id="co2DisplayMobile">0.00 kg</span></span>
+                    </div>
+                    <p id="eduText" class="text-[11px] sm:text-sm font-medium text-slate-700 leading-snug mt-0.5">
+                        Toca o arrastra el residuo resaltado en verde hacia su contenedor correspondiente.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Área Central: Cinta Transportadora -->
+            <div class="relative w-full my-auto">
+                <!-- Encabezado y Progreso del Nivel -->
+                <div class="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-slate-600 mb-1 px-1 gap-2">
+                    <span id="levelTitleBar" class="font-display font-bold text-slate-800 truncate">Nivel 1: Primeros Pasos en Casa</span>
+                    <span id="levelProgressText" class="font-bold text-emerald-700 shrink-0">0 / 8 clasificados</span>
+                </div>
+                <div class="w-full h-2 sm:h-2.5 bg-slate-200 rounded-full overflow-hidden mb-2 sm:mb-3 shadow-inner">
+                    <div id="levelProgressBar" class="h-full bg-gradient-to-r from-emerald-500 to-teal-500 smooth-bar" style="width: 0%"></div>
+                </div>
+
+                <!-- Estructura de la Cinta -->
+                <div id="conveyorWrapper" class="relative w-full h-28 sm:h-40 md:h-48 rounded-2xl sm:rounded-3xl bg-slate-900 p-2 sm:p-3 shadow-2xl border-2 sm:border-4 border-slate-700 overflow-hidden">
+                    <!-- Zona de Peligro (Final de cinta) -->
+                    <div class="absolute right-0 top-0 bottom-0 w-11 sm:w-20 bg-gradient-to-l from-rose-600/45 to-transparent z-10 pointer-events-none flex items-center justify-end pr-1.5 sm:pr-2 border-r-2 sm:border-r-4 border-rose-500">
+                        <span class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-rose-200 [writing-mode:vertical-rl] rotate-180 opacity-90">Límite</span>
+                    </div>
+
+                    <!-- Banda Móvil -->
+                    <div id="conveyorBelt" class="conveyor-belt w-full h-full rounded-xl sm:rounded-2xl relative flex items-center">
+                        <!-- Rodillos giratorios -->
+                        <div class="roller w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-slate-500 absolute left-2 sm:left-3 top-1.5 sm:top-2 opacity-65"></div>
+                        <div class="roller w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-slate-500 absolute left-2 sm:left-3 bottom-1.5 sm:bottom-2 opacity-65"></div>
+                        <div class="roller w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-slate-500 absolute right-2 sm:right-3 top-1.5 sm:top-2 opacity-65"></div>
+                        <div class="roller w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-slate-500 absolute right-2 sm:right-3 bottom-1.5 sm:bottom-2 opacity-65"></div>
+
+                        <!-- Capa de Residuos -->
+                        <div id="itemsLayer" class="absolute inset-0 z-20"></div>
+
+                        <!-- Capa de Efectos Flotantes -->
+                        <div id="effectsLayer" class="absolute inset-0 z-30 pointer-events-none"></div>
+                    </div>
+
+                    <!-- Overlay de Pausa -->
+                    <div id="pauseOverlay" class="hidden absolute inset-0 bg-slate-900/85 backdrop-blur-sm z-40 flex flex-col items-center justify-center text-white rounded-xl sm:rounded-2xl p-2 text-center">
+                        <span class="text-2xl sm:text-3xl mb-1">⏸️</span>
+                        <h3 class="font-display font-extrabold text-lg sm:text-xl">Juego en Pausa</h3>
+                        <p class="text-[11px] sm:text-xs text-slate-300 mt-0.5 mb-2.5">Toca el botón o presiona P / Esc para continuar</p>
+                        <button onclick="togglePause()" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm transition">
+                            Reanudar Partida
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zona Inferior: Los 7 Contenedores Interactivos -->
+            <div class="w-full pt-0.5">
+                <div id="binsGrid" class="grid grid-cols-4 lg:grid-cols-7 gap-1.5 sm:gap-2.5">
+                    <!-- 1: Orgánicos (Marrón / amber-800) -->
+                    <button type="button" data-bin="organico" data-unlock="1" onclick="classifyActiveItem('organico')"
+                        class="bin-card min-h-[76px] sm:min-h-[96px] group relative flex flex-col items-center justify-center rounded-2xl sm:rounded-3xl bg-gradient-to-b from-amber-700 to-amber-900 text-white p-1.5 sm:p-3 shadow-lg shadow-amber-950/25 border-2 border-amber-600 focus:outline-none">
+                        <span class="hidden sm:flex absolute top-1.5 right-1.5 w-5 h-5 rounded-lg bg-black/35 text-[11px] font-extrabold items-center justify-center border border-amber-400/30">1</span>
+                        <div class="bin-lid w-10/12 h-1.5 sm:h-2 bg-amber-500 rounded-full mb-1 sm:mb-1.5 shadow-sm"></div>
+                        <div class="bin-icon w-6 h-6 sm:w-9 sm:h-9 my-0.5 flex items-center justify-center" id="binIcon-organico"></div>
+                        <span class="font-display font-extrabold text-[10px] sm:text-xs md:text-sm leading-tight text-center">Orgánicos</span>
+                        <span class="bin-sublabel text-[9px] sm:text-[10px] text-amber-200 mt-0.5 opacity-95">Marrón</span>
+                    </button>
+
+                    <!-- 2: Plásticos (Azul / blue-600) -->
+                    <button type="button" data-bin="plastico" data-unlock="1" onclick="classifyActiveItem('plastico')"
+                        class="bin-card min-h-[76px] sm:min-h-[96px] group relative flex flex-col items-center justify-center rounded-2xl sm:rounded-3xl bg-gradient-to-b from-blue-500 to-blue-700 text-white p-1.5 sm:p-3 shadow-lg shadow-blue-900/20 border-2 border-blue-400 focus:outline-none">
+                        <span class="hidden sm:flex absolute top-1.5 right-1.5 w-5 h-5 rounded-lg bg-blue-950/50 text-[11px] font-extrabold items-center justify-center border border-blue-300/40">2</span>
+                        <div class="bin-lid w-10/12 h-1.5 sm:h-2 bg-blue-300 rounded-full mb-1 sm:mb-1.5 shadow-sm"></div>
+                        <div class="bin-icon w-6 h-6 sm:w-9 sm:h-9 my-0.5 flex items-center justify-center" id="binIcon-plastico"></div>
+                        <span class="font-display font-extrabold text-[10px] sm:text-xs md:text-sm leading-tight text-center">Plásticos</span>
+                        <span class="bin-sublabel text-[9px] sm:text-[10px] text-blue-100 mt-0.5 opacity-95">Azul</span>
+                    </button>
+
+                    <!-- 3: Papel y Cartón (Amarillo / yellow-500) -->
+                    <button type="button" data-bin="papel" data-unlock="1" onclick="classifyActiveItem('papel')"
+                        class="bin-card min-h-[76px] sm:min-h-[96px] group relative flex flex-col items-center justify-center rounded-2xl sm:rounded-3xl bg-gradient-to-b from-yellow-400 to-yellow-500 text-yellow-950 p-1.5 sm:p-3 shadow-lg shadow-yellow-900/20 border-2 border-yellow-300 focus:outline-none">
+                        <span class="hidden sm:flex absolute top-1.5 right-1.5 w-5 h-5 rounded-lg bg-yellow-950/15 text-[11px] font-extrabold items-center justify-center border border-yellow-900/20">3</span>
+                        <div class="bin-lid w-10/12 h-1.5 sm:h-2 bg-yellow-200 rounded-full mb-1 sm:mb-1.5 shadow-sm"></div>
+                        <div class="bin-icon w-6 h-6 sm:w-9 sm:h-9 my-0.5 flex items-center justify-center" id="binIcon-papel"></div>
+                        <span class="font-display font-extrabold text-[10px] sm:text-xs md:text-sm leading-tight text-center">Papel/Cartón</span>
+                        <span class="bin-sublabel text-[9px] sm:text-[10px] text-yellow-900 mt-0.5 font-semibold">Amarillo</span>
+                    </button>
+
+                    <!-- 4: Vidrio (Verde / emerald-600) -->
+                    <button type="button" data-bin="vidrio" data-unlock="2" onclick="classifyActiveItem('vidrio')"
+                        class="bin-card min-h-[76px] sm:min-h-[96px] group relative flex flex-col items-center justify-center rounded-2xl sm:rounded-3xl bg-gradient-to-b from-emerald-500 to-emerald-700 text-white p-1.5 sm:p-3 shadow-lg shadow-emerald-900/20 border-2 border-emerald-400 focus:outline-none">
+                        <span class="hidden sm:flex absolute top-1.5 right-1.5 w-5 h-5 rounded-lg bg-emerald-950/40 text-[11px] font-extrabold items-center justify-center border border-emerald-300/40">4</span>
+                        <div class="bin-lid w-10/12 h-1.5 sm:h-2 bg-emerald-300 rounded-full mb-1 sm:mb-1.5 shadow-sm"></div>
+                        <div class="bin-icon w-6 h-6 sm:w-9 sm:h-9 my-0.5 flex items-center justify-center" id="binIcon-vidrio"></div>
+                        <span class="font-display font-extrabold text-[10px] sm:text-xs md:text-sm leading-tight text-center">Vidrio</span>
+                        <span class="bin-sublabel text-[9px] sm:text-[10px] text-emerald-100 mt-0.5 opacity-95">Verde</span>
+                    </button>
+
+                    <!-- 5: Metales (Gris / slate-500) -->
+                    <button type="button" data-bin="metal" data-unlock="2" onclick="classifyActiveItem('metal')"
+                        class="bin-card min-h-[76px] sm:min-h-[96px] group relative flex flex-col items-center justify-center rounded-2xl sm:rounded-3xl bg-gradient-to-b from-slate-500 to-slate-700 text-white p-1.5 sm:p-3 shadow-lg shadow-slate-900/25 border-2 border-slate-400 focus:outline-none">
+                        <span class="hidden sm:flex absolute top-1.5 right-1.5 w-5 h-5 rounded-lg bg-slate-950/45 text-[11px] font-extrabold items-center justify-center border border-slate-300/40">5</span>
+                        <div class="bin-lid w-10/12 h-1.5 sm:h-2 bg-slate-300 rounded-full mb-1 sm:mb-1.5 shadow-sm"></div>
+                        <div class="bin-icon w-6 h-6 sm:w-9 sm:h-9 my-0.5 flex items-center justify-center" id="binIcon-metal"></div>
+                        <span class="font-display font-extrabold text-[10px] sm:text-xs md:text-sm leading-tight text-center">Metales</span>
+                        <span class="bin-sublabel text-[9px] sm:text-[10px] text-slate-200 mt-0.5 opacity-95">Gris</span>
+                    </button>
+
+                    <!-- 6: Electrónicos (Violeta / purple-600) -->
+                    <button type="button" data-bin="electronico" data-unlock="3" onclick="classifyActiveItem('electronico')"
+                        class="bin-card min-h-[76px] sm:min-h-[96px] group relative flex flex-col items-center justify-center rounded-2xl sm:rounded-3xl bg-gradient-to-b from-purple-500 to-purple-700 text-white p-1.5 sm:p-3 shadow-lg shadow-purple-950/25 border-2 border-purple-300 focus:outline-none">
+                        <span class="hidden sm:flex absolute top-1.5 right-1.5 w-5 h-5 rounded-lg bg-purple-950/45 text-[11px] font-extrabold items-center justify-center border border-purple-200/40">6</span>
+                        <div class="bin-lid w-10/12 h-1.5 sm:h-2 bg-purple-300 rounded-full mb-1 sm:mb-1.5 shadow-sm"></div>
+                        <div class="bin-icon w-6 h-6 sm:w-9 sm:h-9 my-0.5 flex items-center justify-center" id="binIcon-electronico"></div>
+                        <span class="font-display font-extrabold text-[10px] sm:text-xs md:text-sm leading-tight text-center">Electrónicos</span>
+                        <span class="bin-sublabel text-[9px] sm:text-[10px] text-purple-100 mt-0.5 opacity-95">Violeta</span>
+                    </button>
+
+                    <!-- 7: Delicados (Rojo / red-600) -->
+                    <button type="button" data-bin="delicado" data-unlock="3" onclick="classifyActiveItem('delicado')"
+                        class="bin-card min-h-[76px] sm:min-h-[96px] col-span-2 lg:col-span-1 group relative flex flex-col items-center justify-center rounded-2xl sm:rounded-3xl bg-gradient-to-b from-red-500 to-red-700 text-white p-1.5 sm:p-3 shadow-lg shadow-red-950/30 border-2 border-red-400 focus:outline-none">
+                        <span class="hidden sm:flex absolute top-1.5 right-1.5 w-5 h-5 rounded-lg bg-black/40 text-[11px] font-extrabold items-center justify-center border border-red-300/40">7</span>
+                        <div class="bin-lid w-10/12 h-1.5 sm:h-2 bg-red-300 rounded-full mb-1 sm:mb-1.5 shadow-sm"></div>
+                        <div class="bin-icon w-6 h-6 sm:w-9 sm:h-9 my-0.5 flex items-center justify-center" id="binIcon-delicado"></div>
+                        <span class="font-display font-extrabold text-[10px] sm:text-xs md:text-sm leading-tight text-center">Delicados</span>
+                        <span class="bin-sublabel text-[9px] sm:text-[10px] text-red-100 mt-0.5 opacity-95">Rojo</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODAL DE TRANSICIÓN ENTRE NIVELES -->
+        <div id="levelTransitionModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+            <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-7 shadow-2xl border border-emerald-100 text-center transform transition-all my-auto">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center mx-auto mb-2.5 sm:mb-3 shadow-lg shadow-emerald-200">
+                    <svg class="w-8 h-8 sm:w-9 sm:h-9" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                    </svg>
+                </div>
+                <span id="modalCompletedBadge" class="inline-block text-xs font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full">¡Nivel 1 Completado!</span>
+                <h3 id="modalNextLevelTitle" class="font-display font-extrabold text-xl sm:text-3xl text-slate-900 mt-2">Nivel 2: Envases y Empaques</h3>
+
+                <!-- Resumen de logros del nivel -->
+                <div class="grid grid-cols-2 gap-2.5 my-3 sm:my-4">
+                    <div class="p-2.5 sm:p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                        <span class="text-[11px] font-semibold text-slate-500 block">Puntaje Acumulado</span>
+                        <span id="modalScoreValue" class="font-display font-extrabold text-lg sm:text-xl text-slate-900">0</span>
+                    </div>
+                    <div class="p-2.5 sm:p-3 rounded-2xl bg-teal-50 border border-teal-200">
+                        <span class="text-[11px] font-semibold text-teal-700 block">CO₂ Evitado Total</span>
+                        <span id="modalCo2Value" class="font-display font-extrabold text-lg sm:text-xl text-teal-800">0.00 kg</span>
+                    </div>
+                </div>
+
+                <!-- Nuevos contenedores desbloqueados -->
+                <div id="modalUnlockBox" class="p-3 rounded-2xl bg-indigo-50 border border-indigo-200 text-left mb-2.5 sm:mb-3">
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-indigo-700 block mb-1">🔓 Nuevos Contenedores Desbloqueados</span>
+                    <p id="modalUnlockText" class="text-xs sm:text-sm font-bold text-indigo-950"></p>
+                </div>
+
+                <!-- Dato educativo clave del siguiente nivel -->
+                <div class="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-left mb-4 sm:mb-5">
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-700 block mb-1">💡 Dato Educativo del Nivel</span>
+                    <p id="modalFactText" class="text-xs sm:text-sm text-amber-950 leading-snug"></p>
+                </div>
+
+                <button id="modalContinueBtn" onclick="startNextLevel()" class="w-full py-3 sm:py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-display font-bold text-base sm:text-lg shadow-lg shadow-emerald-600/25 transition hover:scale-[1.02] active:scale-95">
+                    Continuar al Nivel 2
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. PANTALLA DE FIN DE PARTIDA (GAME OVER) -->
+        <section id="gameOverScreen" class="hidden my-auto py-3 sm:py-4 flex flex-col items-center text-center">
+            <div class="w-full max-w-2xl bg-white rounded-3xl p-5 sm:p-8 shadow-2xl border border-slate-100">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl sm:text-4xl mx-auto mb-3 shadow-inner">
+                    🏆
+                </div>
+                <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900">¡Partida Finalizada!</h2>
+                <p id="finalRankText" class="text-emerald-600 font-bold text-sm sm:text-base mt-1">Rango: Guardián del Planeta</p>
+
+                <!-- Métricas Principales -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 my-5 sm:my-6">
+                    <div class="p-3 sm:p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                        <span class="text-xs text-slate-500 font-semibold block">Puntaje Final</span>
+                        <span id="finalScore" class="font-display font-extrabold text-xl sm:text-2xl text-slate-900">0</span>
+                    </div>
+                    <div class="p-3 sm:p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200">
+                        <span class="text-xs text-indigo-700 font-semibold block">Nivel Alcanzado</span>
+                        <span id="finalLevel" class="font-display font-extrabold text-xl sm:text-2xl text-indigo-800">1</span>
+                    </div>
+                    <div class="p-3 sm:p-3.5 rounded-2xl bg-teal-50 border border-teal-200">
+                        <span class="text-xs text-teal-700 font-semibold block">CO₂ Evitado</span>
+                        <span id="finalCo2" class="font-display font-extrabold text-xl sm:text-2xl text-teal-800">0.00 kg</span>
+                    </div>
+                    <div class="p-3 sm:p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
+                        <span class="text-xs text-emerald-700 font-semibold block">Clasificados</span>
+                        <span id="finalItems" class="font-display font-extrabold text-xl sm:text-2xl text-emerald-800">0</span>
+                    </div>
+                </div>
+
+                <!-- Equivalencia Ecológica -->
+                <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-3.5 sm:p-4 mb-5 text-left flex items-start gap-3">
+                    <span class="text-2xl">🌳</span>
+                    <div>
+                        <h4 class="font-bold text-emerald-900 text-sm">Equivalencia Ecológica de tu Impacto</h4>
+                        <p id="finalEcoMessage" class="text-xs sm:text-sm text-emerald-800 mt-0.5"></p>
+                    </div>
+                </div>
+
+                <!-- Listado de Residuos Aprendidos -->
+                <div id="learnedSummary" class="hidden mb-5 text-left">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-2">✅ Residuos Clasificados y Aprendidos:</h4>
+                    <div id="learnedTagsList" class="flex flex-wrap gap-1.5"></div>
+                </div>
+
+                <!-- Repaso de errores -->
+                <div id="mistakesSummary" class="hidden mb-6 text-left">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-rose-500 mb-2">📌 Para recordar la próxima vez:</h4>
+                    <ul id="mistakesList" class="space-y-1.5 text-xs text-slate-700 bg-rose-50/80 border border-rose-200 rounded-xl p-3"></ul>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="startGame()" class="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-display font-bold text-base shadow-lg shadow-emerald-600/25 transition hover:scale-105 active:scale-95">
+                        🔄 Jugar de Nuevo
+                    </button>
+                    <button onclick="goHome()" class="px-6 py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-display font-bold text-base transition">
+                        Volver al Inicio
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= LÓGICA DEL JUEGO, ICONOS SVG Y AUDIO ================= -->
+    <script>
+        /**
+         * ICONOS SVG PERSONALIZADOS PARA LOS 7 CONTENEDORES Y RESIDUOS
+         */
+        function mountStaticSVGs() {
+            const icons = {
+                organico: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>`,
+                plastico: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3h6m-5 0v3l-2 3v10a2 2 0 002 2h4a2 2 0 002-2V9l-2-3V3"/></svg>`,
+                papel: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
+                vidrio: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 2h4m-3 0v4l-3 4v9a2 2 0 002 2h4a2 2 0 002-2v-9l-3-4V2"/></svg>`,
+                metal: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 5h12v14a2 2 0 01-2 2H8a2 2 0 01-2-2V5zm0 4h12M6 15h12"/></svg>`,
+                electronico: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>`,
+                delicado: `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`
+            };
+
+            Object.keys(icons).forEach(cat => {
+                const guideEl = document.getElementById(`guideIcon-${cat}`);
+                const binEl = document.getElementById(`binIcon-${cat}`);
+                if (guideEl) guideEl.innerHTML = icons[cat];
+                if (binEl) binEl.innerHTML = icons[cat].replace('w-5 h-5', 'w-full h-full');
+            });
+        }
+        mountStaticSVGs();
+
+        /**
+         * CONFIGURACIÓN DE LOS 5 NIVELES TEMÁTICOS + MODO EXPERTO INFINITO
+         */
+        const LEVEL_CONFIGS = [
+            {
+                level: 1,
+                title: 'Nivel 1: Primeros Pasos en Casa',
+                targetHits: 8,
+                unlockedBins: ['organico', 'plastico', 'papel'],
+                speedMultiplier: 1.0,
+                spawnMs: 2800,
+                bonusMultiplier: 1,
+                unlockSummary: 'Orgánicos (Tecla 1), Plásticos (Tecla 2) y Papel y Cartón (Tecla 3)',
+                educationalFact: 'Separar los residuos cotidianos del hogar reduce hasta un 60% la basura que llega a los rellenos sanitarios.'
+            },
+            {
+                level: 2,
+                title: 'Nivel 2: Envases y Empaques',
+                targetHits: 12,
+                unlockedBins: ['organico', 'plastico', 'papel', 'vidrio', 'metal'],
+                speedMultiplier: 1.22,
+                spawnMs: 2350,
+                bonusMultiplier: 1.2,
+                unlockSummary: 'Vidrio (Tecla 4 - Verde) y Metales (Tecla 5 - Gris)',
+                educationalFact: 'Tanto el vidrio como el aluminio pueden reciclarse infinitas veces sin perder sus propiedades originales, ahorrando hasta un 95% de energía.'
+            },
+            {
+                level: 3,
+                title: 'Nivel 3: Tecnología y Cuidado Especial',
+                targetHits: 15,
+                unlockedBins: ['organico', 'plastico', 'papel', 'vidrio', 'metal', 'electronico', 'delicado'],
+                speedMultiplier: 1.42,
+                spawnMs: 2000,
+                bonusMultiplier: 1.5,
+                unlockSummary: 'Electrónicos (Tecla 6 - Violeta) y Delicados (Tecla 7 - Rojo) — ¡Los 7 contenedores activos!',
+                educationalFact: 'Los residuos electrónicos y pilas contienen metales valiosos y sustancias tóxicas que nunca deben mezclarse con la basura común.'
+            },
+            {
+                level: 4,
+                title: 'Nivel 4: Planta de Clasificación',
+                targetHits: 20,
+                unlockedBins: ['organico', 'plastico', 'papel', 'vidrio', 'metal', 'electronico', 'delicado'],
+                speedMultiplier: 1.68,
+                spawnMs: 1650,
+                bonusMultiplier: 1.8,
+                unlockSummary: 'Todos los 7 contenedores activos en operación continua de alta velocidad',
+                educationalFact: 'En una planta real de clasificación, la rapidez y precisión permiten recuperar toneladas de materia prima secundaria cada hora.'
+            }
+        ];
+
+        function getLevelConfig(lvl) {
+            if (lvl <= LEVEL_CONFIGS.length) {
+                return LEVEL_CONFIGS[lvl - 1];
+            }
+            const extraStages = lvl - 5;
+            return {
+                level: lvl,
+                title: `Nivel ${lvl}: Modo Experto Ambiental`,
+                targetHits: 25 + extraStages * 5,
+                unlockedBins: ['organico', 'plastico', 'papel', 'vidrio', 'metal', 'electronico', 'delicado'],
+                speedMultiplier: Math.min(2.6, 1.9 + extraStages * 0.15),
+                spawnMs: Math.max(1150, 1400 - extraStages * 70),
+                bonusMultiplier: 2.0 + extraStages * 0.25,
+                unlockSummary: 'Modo Experto Ambiental: Los 7 contenedores activos con bonificación máxima de puntos',
+                educationalFact: 'La economía circular busca mantener productos y materiales en uso el mayor tiempo posible para regenerar los sistemas naturales.'
+            };
+        }
+
+        /**
+         * CATÁLOGO DE RESIDUOS EDUCATIVOS (7 CATEGORÍAS EXACTAS)
+         */
+        const WASTE_CATALOG = [
+            // 1. ORGÁNICOS (Marrón)
+            {
+                id: 'fruta_verdura', name: 'Restos de Fruta', emoji: '🍎', category: 'organico',
+                co2: 0.22,
+                fact: 'Los restos de frutas y verduras se transforman en compost rico en nutrientes para suelos y cultivos.',
+                tip: 'Las frutas y verduras van en el Contenedor Marrón (Orgánicos - Tecla 1).'
+            },
+            {
+                id: 'cascara_huevo', name: 'Cáscaras de Huevo', emoji: '🥚', category: 'organico',
+                co2: 0.18,
+                fact: 'Las cáscaras de huevo aportan calcio al compost y ayudan a equilibrar la acidez de la tierra.',
+                tip: 'Las cáscaras de huevo son biodegradables: van en el Contenedor Marrón (Orgánicos - Tecla 1).'
+            },
+            {
+                id: 'yerba_cafe', name: 'Yerba y Café', emoji: '🧉', category: 'organico',
+                co2: 0.20,
+                fact: 'La yerba mate usada y la borra de café son excelentes abonos orgánicos ricos en nitrógeno.',
+                tip: 'La yerba y el café usados van en el Contenedor Marrón (Orgánicos - Tecla 1).'
+            },
+            {
+                id: 'restos_poda', name: 'Restos de Poda', emoji: '🌿', category: 'organico',
+                co2: 0.25,
+                fact: 'Compostar hojas y restos de poda evita la emisión de gas metano en vertederos.',
+                tip: 'Las hojas secas y restos de poda van en el Contenedor Marrón (Orgánicos - Tecla 1).'
+            },
+
+            // 2. PLÁSTICOS (Azul)
+            {
+                id: 'botella_pet', name: 'Botella PET', emoji: '🧴', category: 'plastico',
+                co2: 0.36,
+                fact: 'Una botella PET tarda hasta 450 años en degradarse. Reciclarla ahorra energía para iluminar una habitación 6 horas.',
+                tip: 'Las botellas PET van en el Contenedor Azul (Plásticos - Tecla 2).'
+            },
+            {
+                id: 'pote_yogur', name: 'Pote de Yogur', emoji: '🥤', category: 'plastico',
+                co2: 0.20,
+                fact: 'Los envases rígidos de polipropileno limpios se reciclan para fabricar tuberías, macetas y mobiliario.',
+                tip: 'Los potes de yogur limpios van en el Contenedor Azul (Plásticos - Tecla 2).'
+            },
+            {
+                id: 'bolsa_plastica', name: 'Bolsa Plástica', emoji: '🛍️', category: 'plastico',
+                co2: 0.16,
+                fact: 'Reciclar bolsas plásticas evita que lleguen a ríos y océanos, protegiendo la fauna marina.',
+                tip: 'Las bolsas plásticas limpias van en el Contenedor Azul (Plásticos - Tecla 2).'
+            },
+            {
+                id: 'envase_limpieza', name: 'Envase Limpieza', emoji: '🧼', category: 'plastico',
+                co2: 0.32,
+                fact: 'Los envases plásticos de detergente o lavandina (HDPE) son altamente reciclables cuando están vacíos.',
+                tip: 'Los envases plásticos de limpieza van en el Contenedor Azul (Plásticos - Tecla 2).'
+            },
+
+            // 3. PAPEL Y CARTÓN (Amarillo)
+            {
+                id: 'caja_carton', name: 'Caja de Cartón', emoji: '📦', category: 'papel',
+                co2: 0.45,
+                fact: 'Reciclar 1 tonelada de cartón salva 17 árboles adultos y ahorra 26.000 litros de agua.',
+                tip: 'Las cajas de cartón limpias y plegadas van en el Contenedor Amarillo (Papel y Cartón - Tecla 3).'
+            },
+            {
+                id: 'hojas_cuaderno', name: 'Hojas Cuaderno', emoji: '📓', category: 'papel',
+                co2: 0.28,
+                fact: 'Fabricar papel reciclado consume un 60% menos de energía que producirlo desde fibra virgen.',
+                tip: 'Las hojas de cuaderno van en el Contenedor Amarillo (Papel y Cartón - Tecla 3).'
+            },
+            {
+                id: 'diario_revista', name: 'Diario / Revista', emoji: '📰', category: 'papel',
+                co2: 0.24,
+                fact: 'Las fibras de papel de diarios y revistas pueden reciclarse hasta 7 veces consecutivas.',
+                tip: 'Diarios y revistas secos van en el Contenedor Amarillo (Papel y Cartón - Tecla 3).'
+            },
+            {
+                id: 'tubo_carton', name: 'Tubo de Cartón', emoji: '🧻', category: 'papel',
+                co2: 0.18,
+                fact: 'Los tubos de rollos de cocina y papel higiénico están hechos de cartón 100% reciclable.',
+                tip: 'Los tubos de cartón van en el Contenedor Amarillo (Papel y Cartón - Tecla 3).'
+            },
+
+            // 4. VIDRIO (Verde)
+            {
+                id: 'botella_vidrio', name: 'Botella de Vidrio', emoji: '🍾', category: 'vidrio',
+                co2: 0.50,
+                fact: 'El vidrio es 100% reciclable infinitas veces sin perder calidad ni pureza.',
+                tip: 'Las botellas de vidrio van en el Contenedor Verde (Vidrio - Tecla 4).'
+            },
+            {
+                id: 'frasco_mermelada', name: 'Frasco Mermelada', emoji: '🫙', category: 'vidrio',
+                co2: 0.42,
+                fact: 'Fundir vidrio reciclado reduce un 20% la contaminación atmosférica respecto a fundir materias primas nuevas.',
+                tip: 'Los frascos de mermelada limpios van en el Contenedor Verde (Vidrio - Tecla 4).'
+            },
+            {
+                id: 'envase_perfume', name: 'Frasco Perfume', emoji: '🧴', category: 'vidrio',
+                co2: 0.35,
+                fact: 'Los envases de vidrio de cosmética y perfumes limpios se reincorporan al ciclo del vidrio.',
+                tip: 'Los envases de vidrio limpios van en el Contenedor Verde (Vidrio - Tecla 4).'
+            },
+
+            // 5. METALES (Gris)
+            {
+                id: 'lata_aluminio', name: 'Lata Aluminio', emoji: '🥫', category: 'metal',
+                co2: 0.60,
+                fact: 'Reciclar 1 sola lata de aluminio ahorra energía suficiente para encender un televisor durante 3 horas.',
+                tip: 'Las latas de aluminio van en el Contenedor Gris (Metales - Tecla 5).'
+            },
+            {
+                id: 'lata_conserva', name: 'Lata Conserva', emoji: '🫘', category: 'metal',
+                co2: 0.52,
+                fact: 'El acero de las latas de conserva se separa fácilmente con imanes y se recicla infinitamente.',
+                tip: 'Las latas de conserva enjuagadas van en el Contenedor Gris (Metales - Tecla 5).'
+            },
+            {
+                id: 'papel_aluminio', name: 'Papel Aluminio', emoji: '🪙', category: 'metal',
+                co2: 0.28,
+                fact: 'Producir aluminio reciclado requiere un 95% menos de electricidad que extraerlo de la naturaleza.',
+                tip: 'El papel aluminio limpio va en el Contenedor Gris (Metales - Tecla 5).'
+            },
+            {
+                id: 'aerosol_vacio', name: 'Aerosol Vacío', emoji: '💨', category: 'metal',
+                co2: 0.40,
+                fact: 'Los aerosoles metálicos vacíos son 100% recuperables en fundiciones siderúrgicas.',
+                tip: 'Los aerosoles domésticos vacíos van en el Contenedor Gris (Metales - Tecla 5).'
+            },
+
+            // 6. ELECTRÓNICOS (Violeta)
+            {
+                id: 'celular_viejo', name: 'Celular Viejo', emoji: '📱', category: 'electronico',
+                co2: 1.40,
+                fact: 'De 1 tonelada de celulares reciclados se recupera más oro y cobre que de 1 tonelada de mineral extraído.',
+                tip: 'Los celulares en desuso van en el Contenedor Violeta (Electrónicos - Tecla 6).'
+            },
+            {
+                id: 'cables_cargador', name: 'Cables / Cargador', emoji: '🔌', category: 'electronico',
+                co2: 0.65,
+                fact: 'Los cables eléctricos contienen cobre de altísima pureza reutilizable en nuevas instalaciones.',
+                tip: 'Cables y cargadores rotos van en el Contenedor Violeta (Electrónicos - Tecla 6).'
+            },
+            {
+                id: 'teclado_mouse', name: 'Teclado / Mouse', emoji: '🖱️', category: 'electronico',
+                co2: 0.85,
+                fact: 'Los periféricos informáticos requieren tratamiento especializado para recuperar circuitos y polímeros.',
+                tip: 'Teclados y ratones averiados van en el Contenedor Violeta (Electrónicos - Tecla 6).'
+            },
+            {
+                id: 'pequeno_electro', name: 'Pequeño Electro', emoji: '📻', category: 'electronico',
+                co2: 1.15,
+                fact: 'Reciclar pequeños electrodomésticos evita que sus componentes electrónicos contaminen el suelo.',
+                tip: 'Los pequeños electrodomésticos van en el Contenedor Violeta (Electrónicos - Tecla 6).'
+            },
+
+            // 7. DELICADOS (Rojo)
+            {
+                id: 'pilas_baterias', name: 'Pilas y Baterías', emoji: '🔋', category: 'delicado',
+                co2: 1.25,
+                fact: 'Una sola pila botón puede contaminar hasta 600.000 litros de agua si se arroja a la basura común.',
+                tip: 'Las pilas y baterías son residuos peligrosos: van en el Contenedor Rojo (Delicados - Tecla 7).'
+            },
+            {
+                id: 'foco_fluorescente', name: 'Foco Bajo Consumo', emoji: '💡', category: 'delicado',
+                co2: 0.78,
+                fact: 'Los focos fluorescentes contienen pequeñas cantidades de vapor de mercurio y requieren manejo seguro.',
+                tip: 'Los focos bajo consumo/fluorescentes van en el Contenedor Rojo (Delicados - Tecla 7), nunca en el vidrio.'
+            },
+            {
+                id: 'medicamentos', name: 'Remedios Vencidos', emoji: '💊', category: 'delicado',
+                co2: 0.58,
+                fact: 'Descartar medicamentos vencidos en forma segura evita la contaminación química de ríos y napas.',
+                tip: 'Los medicamentos vencidos van en el Contenedor Rojo (Delicados - Tecla 7).'
+            },
+            {
+                id: 'solventes_pintura', name: 'Solvente / Pintura', emoji: '🧪', category: 'delicado',
+                co2: 0.95,
+                fact: 'Los envases con restos de pintura o solventes son inflamables y tóxicos para el medio ambiente.',
+                tip: 'Los envases con solventes o pintura van en el Contenedor Rojo (Delicados - Tecla 7).'
+            }
+        ];
+
+        const BIN_NAMES = {
+            organico: 'Contenedor Marrón (Orgánicos)',
+            plastico: 'Contenedor Azul (Plásticos)',
+            papel: 'Contenedor Amarillo (Papel y Cartón)',
+            vidrio: 'Contenedor Verde (Vidrio)',
+            metal: 'Contenedor Gris (Metales)',
+            electronico: 'Contenedor Violeta (Electrónicos)',
+            delicado: 'Contenedor Rojo (Delicados)'
+        };
+
+        /**
+         * SINTETIZADOR DE AUDIO CON WEB AUDIO API (Sin archivos externos)
+         */
+        class SoundEffects {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playTone(freq, type, duration, delay = 0, volume = 0.16) {
+                if (this.muted) return;
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + delay);
+
+                    gain.gain.setValueAtTime(0.001, this.ctx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(volume, this.ctx.currentTime + delay + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + delay + duration);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(this.ctx.currentTime + delay);
+                    osc.stop(this.ctx.currentTime + delay + duration + 0.02);
+                } catch (e) {}
+            }
+
+            playSuccess(streak = 1) {
+                const boost = Math.min(streak * 18, 150);
+                this.playTone(523.25 + boost, 'sine', 0.13, 0, 0.16);
+                this.playTone(659.25 + boost, 'sine', 0.15, 0.06, 0.16);
+                this.playTone(783.99 + boost, 'triangle', 0.22, 0.12, 0.14);
+            }
+
+            playError() {
+                this.playTone(210, 'sawtooth', 0.16, 0, 0.11);
+                this.playTone(165, 'sawtooth', 0.26, 0.11, 0.11);
+            }
+
+            playLevelUp() {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((n, idx) => {
+                    this.playTone(n, 'triangle', 0.22, idx * 0.09, 0.18);
+                });
+            }
+
+            playGameOver() {
+                const notes = [440, 392, 349.23, 293.66];
+                notes.forEach((n, idx) => {
+                    this.playTone(n, 'sine', 0.28, idx * 0.14, 0.16);
+                });
+            }
+        }
+
+        const sfx = new SoundEffects();
+
+        /**
+         * ESTADO GLOBAL DEL JUEGO
+         */
+        const state = {
+            status: 'start',
+            score: 0,
+            lives: 5,
+            maxLives: 5,
+            level: 1,
+            streak: 0,
+            itemsSorted: 0,
+            levelHits: 0,
+            co2Saved: 0,
+            items: [],
+            nextItemId: 1,
+            lastSpawnTime: 0,
+            lastFrameTime: 0,
+            draggedItemId: null,
+            selectedItemId: null,
+            learnedLog: new Map(),
+            mistakesLog: new Map(),
+            animFrameId: null
+        };
+
+        const dom = {
+            startScreen: document.getElementById('startScreen'),
+            playScreen: document.getElementById('playScreen'),
+            gameOverScreen: document.getElementById('gameOverScreen'),
+            levelTransitionModal: document.getElementById('levelTransitionModal'),
+            gameHud: document.getElementById('gameHud'),
+            pauseBtn: document.getElementById('pauseBtn'),
+            pauseOverlay: document.getElementById('pauseOverlay'),
+            livesDisplay: document.getElementById('livesDisplay'),
+            levelDisplay: document.getElementById('levelDisplay'),
+            scoreDisplay: document.getElementById('scoreDisplay'),
+            streakBadge: document.getElementById('streakBadge'),
+            co2Display: document.getElementById('co2Display'),
+            co2DisplayMobile: document.getElementById('co2DisplayMobile'),
+            conveyorBelt: document.getElementById('conveyorBelt'),
+            conveyorWrapper: document.getElementById('conveyorWrapper'),
+            itemsLayer: document.getElementById('itemsLayer'),
+            effectsLayer: document.getElementById('effectsLayer'),
+            eduBanner: document.getElementById('eduBanner'),
+            eduIconBox: document.getElementById('eduIconBox'),
+            eduTag: document.getElementById('eduTag'),
+            eduText: document.getElementById('eduText'),
+            levelTitleBar: document.getElementById('levelTitleBar'),
+            levelProgressText: document.getElementById('levelProgressText'),
+            levelProgressBar: document.getElementById('levelProgressBar')
+        };
+
+        /**
+         * CONTROL DE AUDIO Y PANTALLAS
+         */
+        function toggleAudio() {
+            sfx.muted = !sfx.muted;
+            document.getElementById('soundOnIcon').classList.toggle('hidden', sfx.muted);
+            document.getElementById('soundOffIcon').classList.toggle('hidden', !sfx.muted);
+            if (!sfx.muted) sfx.playTone(660, 'sine', 0.1, 0, 0.12);
+        }
+
+        function goHome() {
+            state.status = 'start';
+            if (state.animFrameId) cancelAnimationFrame(state.animFrameId);
+            document.querySelectorAll('.waste-item.dragging').forEach(el => el.remove());
+            dom.levelTransitionModal.classList.add('hidden');
+            dom.startScreen.classList.remove('hidden');
+            dom.playScreen.classList.add('hidden');
+            dom.gameOverScreen.classList.add('hidden');
+            dom.gameHud.classList.add('hidden');
+            dom.pauseBtn.classList.add('hidden');
+        }
+
+        function startGame() {
+            sfx.init();
+            sfx.playSuccess(1);
+
+            state.status = 'playing';
+            state.score = 0;
+            state.lives = 5;
+            state.level = 1;
+            state.streak = 0;
+            state.itemsSorted = 0;
+            state.levelHits = 0;
+            state.co2Saved = 0;
+            state.items = [];
+            state.nextItemId = 1;
+            state.draggedItemId = null;
+            state.selectedItemId = null;
+            state.learnedLog.clear();
+            state.mistakesLog.clear();
+
+            dom.itemsLayer.innerHTML = '';
+            dom.effectsLayer.innerHTML = '';
+            dom.pauseOverlay.classList.add('hidden');
+            dom.levelTransitionModal.classList.add('hidden');
+            dom.conveyorBelt.classList.remove('conveyor-paused');
+
+            dom.startScreen.classList.add('hidden');
+            dom.gameOverScreen.classList.add('hidden');
+            dom.playScreen.classList.remove('hidden');
+            dom.gameHud.classList.remove('hidden');
+            dom.pauseBtn.classList.remove('hidden');
+
+            applyLevelSetup(1);
+            updateHUD();
+
+            spawnWasteItem();
+            state.lastSpawnTime = performance.now();
+            state.lastFrameTime = performance.now();
+
+            if (state.animFrameId) cancelAnimationFrame(state.animFrameId);
+            state.animFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        /**
+         * CONFIGURACIÓN VISUAL Y LÓGICA DEL NIVEL ACTUAL
+         */
+        function applyLevelSetup(lvl) {
+            const cfg = getLevelConfig(lvl);
+            const activeSet = new Set(cfg.unlockedBins);
+
+            document.querySelectorAll('.bin-card').forEach(binEl => {
+                const cat = binEl.dataset.bin;
+                const unlockLvl = binEl.dataset.unlock;
+                const sublabel = binEl.querySelector('.bin-sublabel');
+                const isUnlocked = activeSet.has(cat);
+
+                if (isUnlocked) {
+                    binEl.classList.remove('bin-locked');
+                    binEl.disabled = false;
+                    const colorLabels = {
+                        organico: 'Marrón',
+                        plastico: 'Azul',
+                        papel: 'Amarillo',
+                        vidrio: 'Verde',
+                        metal: 'Gris',
+                        electronico: 'Violeta',
+                        delicado: 'Rojo'
+                    };
+                    if (sublabel) sublabel.textContent = colorLabels[cat];
+                } else {
+                    binEl.classList.add('bin-locked');
+                    binEl.disabled = true;
+                    if (sublabel) sublabel.textContent = `🔒 Nv.${unlockLvl}`;
+                }
+            });
+
+            const animDuration = Math.max(0.45, 1.85 / cfg.speedMultiplier);
+            document.documentElement.style.setProperty('--belt-speed', `${animDuration}s`);
+
+            setEduBanner(
+                'info',
+                '🌱',
+                cfg.title,
+                `${cfg.educationalFact} (Meta: clasificar ${cfg.targetHits} residuos)`
+            );
+        }
+
+        function togglePause() {
+            if (state.status === 'playing') {
+                state.status = 'paused';
+                dom.pauseOverlay.classList.remove('hidden');
+                dom.conveyorBelt.classList.add('conveyor-paused');
+            } else if (state.status === 'paused') {
+                state.status = 'playing';
+                dom.pauseOverlay.classList.add('hidden');
+                dom.conveyorBelt.classList.remove('conveyor-paused');
+                state.lastFrameTime = performance.now();
+                state.animFrameId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        /**
+         * GENERACIÓN Y MOVIMIENTO DE RESIDUOS EN LA CINTA
+         */
+        function getBeltSpeedPxPerSec() {
+            const width = dom.conveyorBelt.clientWidth || 800;
+            const cfg = getLevelConfig(state.level);
+            const baseSpeed = Math.max(68, width * 0.125);
+            return baseSpeed * cfg.speedMultiplier;
+        }
+
+        function spawnWasteItem() {
+            const beltWidth = dom.conveyorBelt.clientWidth || 320;
+            const minGap = beltWidth < 450 ? 92 : 120;
+            const tooClose = state.items.some(it => it.x < minGap);
+            if (tooClose) return;
+
+            const cfg = getLevelConfig(state.level);
+            const allowedCategories = new Set(cfg.unlockedBins);
+            const availablePool = WASTE_CATALOG.filter(item => allowedCategories.has(item.category));
+
+            const template = availablePool[Math.floor(Math.random() * availablePool.length)];
+            const id = state.nextItemId++;
+
+            const el = document.createElement('div');
+            el.className = 'waste-item absolute top-1/2 -translate-y-1/2 bg-white rounded-xl sm:rounded-2xl px-2 py-1.5 sm:px-4 sm:py-2.5 shadow-lg border-2 border-slate-200 flex flex-col items-center justify-center cursor-grab select-none min-w-[74px] sm:min-w-[104px]';
+            el.style.left = '12px';
+            el.dataset.id = id;
+
+            el.innerHTML = `
+                <span class="text-xl sm:text-4xl leading-none mb-0.5 sm:mb-1 pointer-events-none">${template.emoji}</span>
+                <span class="text-[9px] sm:text-xs font-bold text-slate-800 text-center leading-tight pointer-events-none">${template.name}</span>
+            `;
+
+            setupItemPointerInteractions(el, id);
+            dom.itemsLayer.appendChild(el);
+
+            state.items.push({
+                id,
+                data: template,
+                x: 12,
+                el,
+                isDragging: false
+            });
+
+            highlightActiveItem();
+        }
+
+        function getActiveItem() {
+            if (state.items.length === 0) return null;
+            if (state.selectedItemId !== null) {
+                const selected = state.items.find(i => i.id === state.selectedItemId);
+                if (selected) return selected;
+                state.selectedItemId = null;
+            }
+            return state.items.reduce((prev, curr) => (curr.x > prev.x ? curr : prev), state.items[0]);
+        }
+
+        function highlightActiveItem() {
+            if (state.items.length === 0) return;
+            const target = getActiveItem();
+            for (const item of state.items) {
+                if (target && item.id === target.id && !item.isDragging) {
+                    item.el.classList.add('active-target');
+                } else {
+                    item.el.classList.remove('active-target');
+                }
+            }
+        }
+
+        /**
+         * INTERACCIONES UNIFICADAS CON POINTER EVENTS (Móvil, Tablet y PC)
+         * Soporta tanto toque para seleccionar como arrastre fluido hacia contenedores
+         */
+        function setupItemPointerInteractions(el, itemId) {
+            let startX = 0;
+            let startY = 0;
+            let hasDragged = false;
+            let activePointerId = null;
+
+            el.addEventListener('pointerdown', (e) => {
+                if (state.status !== 'playing') return;
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                const item = state.items.find(i => i.id === itemId);
+                if (!item || item.isDragging) return;
+
+                e.preventDefault();
+                activePointerId = e.pointerId;
+                startX = e.clientX;
+                startY = e.clientY;
+                hasDragged = false;
+
+                // Al tocar un residuo, lo seleccionamos inmediatamente como objetivo activo
+                state.selectedItemId = itemId;
+                highlightActiveItem();
+
+                try {
+                    el.setPointerCapture(e.pointerId);
+                } catch (err) {}
+            });
+
+            el.addEventListener('pointermove', (e) => {
+                if (activePointerId !== e.pointerId || state.status !== 'playing') return;
+                const item = state.items.find(i => i.id === itemId);
+                if (!item) return;
+
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+
+                // Iniciar arrastre real solo si se desplazó más de 8px
+                if (!hasDragged && Math.hypot(dx, dy) > 8) {
+                    hasDragged = true;
+                    item.isDragging = true;
+                    state.draggedItemId = itemId;
+                    const rect = el.getBoundingClientRect();
+                    document.body.appendChild(el);
+                    el.classList.add('dragging');
+                    el.classList.remove('active-target');
+                    el.style.position = 'fixed';
+                    el.style.width = `${rect.width}px`;
+                }
+
+                if (hasDragged && item.isDragging) {
+                    el.style.left = `${e.clientX}px`;
+                    el.style.top = `${e.clientY}px`;
+                    highlightHoveredBin(e.clientX, e.clientY);
+                }
+            });
+
+            const finishPointer = (e) => {
+                if (activePointerId !== e.pointerId) return;
+                activePointerId = null;
+                clearBinHighlights();
+
+                const item = state.items.find(i => i.id === itemId);
+                if (!item) return;
+
+                if (hasDragged && item.isDragging) {
+                    item.isDragging = false;
+                    state.draggedItemId = null;
+
+                    const targetBin = detectBinAtPoint(e.clientX, e.clientY);
+                    if (targetBin) {
+                        el.remove();
+                        processClassification(item, targetBin);
+                    } else {
+                        el.classList.remove('dragging');
+                        el.style.position = 'absolute';
+                        el.style.top = '50%';
+                        el.style.left = `${item.x}px`;
+                        el.style.width = '';
+                        dom.itemsLayer.appendChild(el);
+                        highlightActiveItem();
+                    }
+                } else {
+                    // Fue un toque rápido: dar feedback sutil de selección
+                    sfx.playTone(720, 'sine', 0.06, 0, 0.08);
+                }
+            };
+
+            el.addEventListener('pointerup', finishPointer);
+            el.addEventListener('pointercancel', finishPointer);
+        }
+
+        function detectBinAtPoint(x, y) {
+            const bins = document.querySelectorAll('.bin-card:not(.bin-locked)');
+            for (const bin of bins) {
+                const rect = bin.getBoundingClientRect();
+                if (x >= rect.left - 12 && x <= rect.right + 12 && y >= rect.top - 16 && y <= rect.bottom + 16) {
+                    return bin.dataset.bin;
+                }
+            }
+            return null;
+        }
+
+        function highlightHoveredBin(x, y) {
+            const bins = document.querySelectorAll('.bin-card:not(.bin-locked)');
+            for (const bin of bins) {
+                const rect = bin.getBoundingClientRect();
+                const isOver = x >= rect.left - 12 && x <= rect.right + 12 && y >= rect.top - 16 && y <= rect.bottom + 16;
+                bin.classList.toggle('drag-over', isOver);
+            }
+        }
+
+        function clearBinHighlights() {
+            document.querySelectorAll('.bin-card').forEach(b => b.classList.remove('drag-over'));
+        }
+
+        /**
+         * CLASIFICACIÓN POR TECLADO O TOQUE EN CONTENEDOR
+         */
+        function classifyActiveItem(selectedBin) {
+            if (state.status !== 'playing') return;
+
+            const cfg = getLevelConfig(state.level);
+            if (!cfg.unlockedBins.includes(selectedBin)) return;
+
+            const targetItem = getActiveItem();
+            if (!targetItem) return;
+
+            const binEl = document.querySelector(`.bin-card[data-bin="${selectedBin}"]`);
+            if (binEl) {
+                binEl.classList.add('scale-95');
+                setTimeout(() => binEl.classList.remove('scale-95'), 120);
+            }
+
+            if (targetItem.el && targetItem.el.parentNode) {
+                targetItem.el.remove();
+            }
+            processClassification(targetItem, selectedBin);
+        }
+
+        /**
+         * EVALUACIÓN DE ACIERTO / ERROR Y PROGRESIÓN DE NIVEL
+         */
+        function processClassification(item, selectedBin) {
+            if (state.selectedItemId === item.id) {
+                state.selectedItemId = null;
+            }
+            state.items = state.items.filter(i => i.id !== item.id);
+            highlightActiveItem();
+
+            const cfg = getLevelConfig(state.level);
+            const isCorrect = item.data.category === selectedBin;
+
+            if (isCorrect) {
+                state.streak++;
+                state.itemsSorted++;
+                state.levelHits++;
+                const streakMult = Math.min(1 + Math.floor(state.streak / 3), 4);
+                const pointsEarned = Math.round(100 * streakMult * cfg.bonusMultiplier);
+                state.score += pointsEarned;
+                state.co2Saved += item.data.co2;
+
+                state.learnedLog.set(item.data.id, `${item.data.emoji} ${item.data.name}`);
+
+                sfx.playSuccess(state.streak);
+                spawnFloatingEffect(`+${pointsEarned} pts`, 'text-emerald-400', item.x);
+
+                setEduBanner(
+                    'success',
+                    item.data.emoji,
+                    `¡Excelente! ${item.data.name} → ${BIN_NAMES[selectedBin]}`,
+                    item.data.fact
+                );
+
+                updateHUD();
+
+                if (state.levelHits >= cfg.targetHits) {
+                    openLevelTransitionModal();
+                    return;
+                }
+            } else {
+                state.streak = 0;
+                state.lives--;
+                sfx.playError();
+                triggerScreenShake();
+                spawnFloatingEffect('¡Error!', 'text-rose-400', item.x);
+
+                state.mistakesLog.set(item.data.id, `${item.data.emoji} <strong>${item.data.name}</strong>: ${item.data.tip}`);
+
+                setEduBanner(
+                    'error',
+                    '⚠️',
+                    `¡Incorrecto! ${item.data.name} no va en ${BIN_NAMES[selectedBin]}`,
+                    item.data.tip
+                );
+
+                updateHUD();
+
+                if (state.lives <= 0) {
+                    endGame();
+                    return;
+                }
+            }
+
+            if (state.items.length === 0 && state.status === 'playing') {
+                spawnWasteItem();
+                state.lastSpawnTime = performance.now();
+            }
+        }
+
+        /**
+         * MODAL DE TRANSICIÓN DE NIVEL
+         */
+        function openLevelTransitionModal() {
+            state.status = 'level_transition';
+            if (state.animFrameId) cancelAnimationFrame(state.animFrameId);
+            dom.conveyorBelt.classList.add('conveyor-paused');
+
+            dom.itemsLayer.innerHTML = '';
+            state.items = [];
+            state.selectedItemId = null;
+            document.querySelectorAll('.waste-item.dragging').forEach(el => el.remove());
+
+            sfx.playLevelUp();
+
+            const completedLvl = state.level;
+            const nextLvl = completedLvl + 1;
+            const nextCfg = getLevelConfig(nextLvl);
+
+            document.getElementById('modalCompletedBadge').textContent = `¡Nivel ${completedLvl} Completado!`;
+            document.getElementById('modalNextLevelTitle').textContent = nextCfg.title;
+            document.getElementById('modalScoreValue').textContent = state.score.toLocaleString('es-ES');
+            document.getElementById('modalCo2Value').textContent = `${state.co2Saved.toFixed(2)} kg`;
+            document.getElementById('modalUnlockText').textContent = nextCfg.unlockSummary;
+            document.getElementById('modalFactText').textContent = nextCfg.educationalFact;
+            document.getElementById('modalContinueBtn').textContent = `Continuar al Nivel ${nextLvl} →`;
+
+            dom.levelTransitionModal.classList.remove('hidden');
+        }
+
+        function startNextLevel() {
+            state.level++;
+            state.levelHits = 0;
+            state.status = 'playing';
+
+            dom.levelTransitionModal.classList.add('hidden');
+            dom.conveyorBelt.classList.remove('conveyor-paused');
+
+            applyLevelSetup(state.level);
+            updateHUD();
+
+            spawnWasteItem();
+            state.lastSpawnTime = performance.now();
+            state.lastFrameTime = performance.now();
+            state.animFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        /**
+         * BUCLE PRINCIPAL DE ANIMACIÓN
+         */
+        function gameLoop(timestamp) {
+            if (state.status !== 'playing') return;
+
+            const dt = Math.min(0.1, (timestamp - state.lastFrameTime) / 1000);
+            state.lastFrameTime = timestamp;
+
+            const cfg = getLevelConfig(state.level);
+            if (timestamp - state.lastSpawnTime >= cfg.spawnMs) {
+                spawnWasteItem();
+                state.lastSpawnTime = timestamp;
+            }
+
+            const speed = getBeltSpeedPxPerSec();
+            const beltWidth = dom.conveyorBelt.clientWidth;
+            const dangerMargin = beltWidth < 450 ? 64 : 85;
+            const limitX = beltWidth - dangerMargin;
+
+            for (let i = state.items.length - 1; i >= 0; i--) {
+                const item = state.items[i];
+                if (item.isDragging) continue;
+
+                item.x += speed * dt;
+                item.el.style.left = `${item.x}px`;
+
+                if (item.x >= limitX) {
+                    if (state.selectedItemId === item.id) state.selectedItemId = null;
+                    item.el.remove();
+                    state.items.splice(i, 1);
+                    handleMissedItem(item);
+                    if (state.status !== 'playing') return;
+                }
+            }
+
+            highlightActiveItem();
+            state.animFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function handleMissedItem(item) {
+            state.streak = 0;
+            state.lives--;
+            sfx.playError();
+            triggerScreenShake();
+            spawnFloatingEffect('¡Se cayó!', 'text-rose-400', dom.conveyorBelt.clientWidth - 95);
+
+            state.mistakesLog.set(item.data.id, `${item.data.emoji} <strong>${item.data.name}</strong>: ${item.data.tip}`);
+
+            setEduBanner(
+                'error',
+                '⏰',
+                `¡Se cayó ${item.data.name} al final de la cinta!`,
+                item.data.tip
+            );
+
+            updateHUD();
+
+            if (state.lives <= 0) {
+                endGame();
+            }
+        }
+
+        /**
+         * ACTUALIZACIÓN DEL HUD Y BANNER EDUCATIVO
+         */
+        function updateHUD() {
+            const cfg = getLevelConfig(state.level);
+
+            let hearts = '';
+            for (let i = 0; i < state.maxLives; i++) {
+                hearts += i < state.lives ? '❤️' : '🖤';
+            }
+            dom.livesDisplay.textContent = hearts;
+
+            dom.levelDisplay.textContent = state.level;
+            dom.levelTitleBar.textContent = cfg.title;
+            dom.levelProgressText.textContent = `${state.levelHits} / ${cfg.targetHits} clasificados`;
+            const pct = Math.min(100, Math.round((state.levelHits / cfg.targetHits) * 100));
+            dom.levelProgressBar.style.width = `${pct}%`;
+
+            dom.scoreDisplay.textContent = state.score.toLocaleString('es-ES');
+            const mult = Math.min(1 + Math.floor(state.streak / 3), 4);
+            if (mult > 1) {
+                dom.streakBadge.textContent = `x${mult}`;
+                dom.streakBadge.classList.remove('hidden');
+            } else {
+                dom.streakBadge.classList.add('hidden');
+            }
+
+            const co2Formatted = `${state.co2Saved.toFixed(2)} kg`;
+            dom.co2Display.textContent = co2Formatted;
+            dom.co2DisplayMobile.textContent = co2Formatted;
+        }
+
+        function setEduBanner(type, icon, title, text) {
+            dom.eduIconBox.textContent = icon;
+            dom.eduTag.textContent = title;
+            dom.eduText.textContent = text;
+
+            dom.eduBanner.className = 'w-full rounded-2xl p-2.5 sm:p-4 shadow-md transition-all duration-300 flex items-center gap-2.5 sm:gap-4 border';
+            dom.eduIconBox.className = 'w-9 h-9 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg sm:text-2xl shrink-0';
+            dom.eduTag.className = 'text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate';
+
+            if (type === 'success') {
+                dom.eduBanner.classList.add('bg-emerald-50/95', 'border-emerald-300');
+                dom.eduIconBox.classList.add('bg-emerald-200/70', 'text-emerald-800');
+                dom.eduTag.classList.add('text-emerald-700');
+            } else if (type === 'error') {
+                dom.eduBanner.classList.add('bg-rose-50/95', 'border-rose-300');
+                dom.eduIconBox.classList.add('bg-rose-200/70', 'text-rose-800');
+                dom.eduTag.classList.add('text-rose-700');
+            } else {
+                dom.eduBanner.classList.add('bg-white/95', 'border-emerald-200');
+                dom.eduIconBox.classList.add('bg-emerald-100', 'text-emerald-700');
+                dom.eduTag.classList.add('text-emerald-600');
+            }
+        }
+
+        function spawnFloatingEffect(text, colorClass, xPos) {
+            const el = document.createElement('div');
+            el.className = `floating-feedback absolute top-1/3 font-display font-extrabold text-sm sm:text-lg drop-shadow-md ${colorClass}`;
+            el.style.left = `${Math.max(16, Math.min(xPos, dom.conveyorBelt.clientWidth - 80))}px`;
+            el.textContent = text;
+            dom.effectsLayer.appendChild(el);
+            setTimeout(() => el.remove(), 1100);
+        }
+
+        function triggerScreenShake() {
+            dom.conveyorWrapper.classList.remove('shake-anim');
+            void dom.conveyorWrapper.offsetWidth;
+            dom.conveyorWrapper.classList.add('shake-anim');
+        }
+
+        /**
+         * PANTALLA DE FIN DE PARTIDA (GAME OVER)
+         */
+        function endGame() {
+            state.status = 'gameover';
+            if (state.animFrameId) cancelAnimationFrame(state.animFrameId);
+            sfx.playGameOver();
+
+            document.querySelectorAll('.waste-item.dragging').forEach(el => el.remove());
+
+            dom.playScreen.classList.add('hidden');
+            dom.pauseBtn.classList.add('hidden');
+            dom.gameOverScreen.classList.remove('hidden');
+
+            let rank = 'Aprendiz Ecológico 🌱';
+            if (state.level >= 5 || state.score >= 5000) rank = 'Experto en Economía Circular 🌍';
+            else if (state.level >= 3 || state.score >= 2200) rank = 'Guardián del Planeta 🌿';
+            else if (state.level >= 2 || state.score >= 800) rank = 'Clasificador Consciente ♻️';
+
+            document.getElementById('finalRankText').textContent = `Rango alcanzado: ${rank}`;
+            document.getElementById('finalScore').textContent = state.score.toLocaleString('es-ES');
+            document.getElementById('finalLevel').textContent = state.level;
+            document.getElementById('finalCo2').textContent = `${state.co2Saved.toFixed(2)} kg`;
+            document.getElementById('finalItems').textContent = state.itemsSorted;
+
+            const kmCarSaved = Math.max(1, Math.round(state.co2Saved * 6.2));
+            const treeDays = Math.max(1, Math.round(state.co2Saved * 16));
+            document.getElementById('finalEcoMessage').textContent = state.itemsSorted > 0
+                ? `Evitaste ${state.co2Saved.toFixed(2)} kg de CO₂, equivalente a evitar recorrer ${kmCarSaved} km en automóvil o al trabajo de absorción de un árbol durante ${treeDays} días.`
+                : '¡Buen intento! Cada residuo bien separado ayuda a conservar recursos naturales y proteger el ambiente.';
+
+            const learnedBox = document.getElementById('learnedSummary');
+            const learnedList = document.getElementById('learnedTagsList');
+            learnedList.innerHTML = '';
+
+            if (state.learnedLog.size > 0) {
+                learnedBox.classList.remove('hidden');
+                state.learnedLog.forEach((label) => {
+                    const span = document.createElement('span');
+                    span.className = 'text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-full';
+                    span.textContent = label;
+                    learnedList.appendChild(span);
+                });
+            } else {
+                learnedBox.classList.add('hidden');
+            }
+
+            const mistakesBox = document.getElementById('mistakesSummary');
+            const mistakesList = document.getElementById('mistakesList');
+            mistakesList.innerHTML = '';
+
+            if (state.mistakesLog.size > 0) {
+                mistakesBox.classList.remove('hidden');
+                state.mistakesLog.forEach((msg) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `• ${msg}`;
+                    mistakesList.appendChild(li);
+                });
+            } else {
+                mistakesBox.classList.add('hidden');
+            }
+        }
+
+        /**
+         * CONTROLES DE TECLADO (Teclas 1 al 7, Pausa y Continuar en Modal)
+         */
+        window.addEventListener('keydown', (e) => {
+            if (state.status === 'level_transition' && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                startNextLevel();
+                return;
+            }
+
+            if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+                if (state.status === 'playing' || state.status === 'paused') {
+                    togglePause();
+                }
+                return;
+            }
+
+            if (state.status !== 'playing') return;
+
+            const keyMap = {
+                '1': 'organico',
+                '2': 'plastico',
+                '3': 'papel',
+                '4': 'vidrio',
+                '5': 'metal',
+                '6': 'electronico',
+                '7': 'delicado'
+            };
+
+            if (keyMap[e.key]) {
+                e.preventDefault();
+                classifyActiveItem(keyMap[e.key]);
+            }
+        });
+    </script>
+</body>
+</html>
