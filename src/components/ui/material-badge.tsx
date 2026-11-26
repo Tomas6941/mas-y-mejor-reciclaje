@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- MATERIAL_ICONS se comparte con las secciones */
 import type { LucideIcon } from 'lucide-react';
-import { Apple, BatteryCharging, Cpu, CupSoda, Newspaper, Trash2, Wine } from 'lucide-react';
+import { Apple, Biohazard, Cpu, CupSoda, Newspaper, Trash2, Wine } from 'lucide-react';
 
 import { MATERIAL_MAP } from '@/data/materials';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,7 @@ export const MATERIAL_ICONS: Record<MaterialKey, LucideIcon> = {
   metal: Trash2,
   organico: Apple,
   electronicos: Cpu,
-  pilas: BatteryCharging,
+  pilas: Biohazard,
 };
 
 /** Clases literales para que Tailwind las detecte (no interpolación). */

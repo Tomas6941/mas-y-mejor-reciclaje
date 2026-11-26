@@ -3,15 +3,15 @@
     "key": "papel",
     "label": "Papel y cartón",
     "short": "Papel",
-    "color": "#2563EB",
-    "colorDark": "#7CA9F9"
+    "color": "#C89100",
+    "colorDark": "#F0C24E"
   },
   {
     "key": "plastico",
     "label": "Plástico",
     "short": "Plástico",
-    "color": "#C89100",
-    "colorDark": "#F0C24E"
+    "color": "#2563EB",
+    "colorDark": "#7CA9F9"
   },
   {
     "key": "vidrio",
@@ -43,8 +43,8 @@
   },
   {
     "key": "pilas",
-    "label": "Pilas y baterías",
-    "short": "Pilas",
+    "label": "Delicados",
+    "short": "Delicados",
     "color": "#C03526",
     "colorDark": "#F58376"
   }
