@@ -170,19 +170,15 @@ function CourseMeans() {
 
 export default function BlogSection() {
   return (
-    <div className="pb-16 pt-24 sm:pt-28">
-      <header className="relative isolate overflow-hidden bg-[#073c2c] text-white">
-        <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-40 size-[28rem] rounded-full bg-emerald-300/10 blur-3xl" />
-        <div className="container-page relative py-12 sm:py-16">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-100"><BarChart3 className="size-4" /> Encuesta local</span>
-          <h1 className="mt-5 max-w-3xl font-display text-4xl font-bold tracking-tight sm:text-6xl">Así reciclamos en Córdoba</h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-emerald-50/80 sm:text-lg">124 respuestas para entender qué separamos, qué nos cuesta y dónde podemos mejorar.</p>
-          <p className="mt-5 text-xs text-emerald-100/70">Encuesta interna · noviembre de 2026</p>
-        </div>
+    <div className="container-page pb-16 pt-28">
+      <header className="mb-8 max-w-3xl">
+        <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3.5 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary"><BarChart3 className="size-4" /> Encuesta local</span>
+        <h1 className="mt-5 font-display text-4xl font-bold tracking-tight sm:text-5xl">Así reciclamos en Córdoba</h1>
+        <p className="mt-3 text-base text-muted sm:text-lg">124 respuestas para entender qué separamos, qué nos cuesta y dónde podemos mejorar.</p>
+        <p className="mt-3 text-xs text-muted">Encuesta interna · noviembre de 2026</p>
       </header>
 
-      <div className="container-page">
-        <section className="mt-12" aria-labelledby="habits-title">
+        <section aria-labelledby="habits-title">
           <SectionHeading eyebrow="De un vistazo" title="Hábitos de separación" description="Cada gráfico resume una pregunta de la encuesta. Pasá el cursor sobre las porciones para ver los valores." />
           <div className="grid gap-4 lg:grid-cols-3">
             {PIE_DATA.map((item) => <PieCard key={item.title} {...item} />)}
@@ -298,7 +294,6 @@ export default function BlogSection() {
         </details>
 
         <p className="mt-7 flex items-start gap-2 text-xs leading-relaxed text-muted"><Leaf className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" /> Fuente: estadísticas descriptivas de la encuesta interna de Mas y mejor reciclaje · Córdoba.</p>
-      </div>
     </div>
   );
 }
