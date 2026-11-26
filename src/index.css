@@ -52,12 +52,12 @@
     --status-damaged-soft: 228 232 234;
 
     /* Colores por material: base (rellenos), strong (texto AA), soft (fondos) */
-    --material-papel: 37 99 235;
-    --material-papel-strong: 37 99 235;
-    --material-papel-soft: 227 237 251;
-    --material-plastico: 200 145 0;
-    --material-plastico-strong: 138 102 0;
-    --material-plastico-soft: 247 237 210;
+    --material-papel: 200 145 0;
+    --material-papel-strong: 138 102 0;
+    --material-papel-soft: 247 237 210;
+    --material-plastico: 37 99 235;
+    --material-plastico-strong: 37 99 235;
+    --material-plastico-soft: 227 237 251;
     --material-vidrio: 14 143 115;
     --material-vidrio-strong: 11 122 95;
     --material-vidrio-soft: 221 240 234;
@@ -113,12 +113,12 @@
     --status-damaged: 163 180 188;
     --status-damaged-soft: 35 42 46;
 
-    --material-papel: 124 169 249;
-    --material-papel-strong: 124 169 249;
-    --material-papel-soft: 29 38 52;
-    --material-plastico: 240 194 78;
-    --material-plastico-strong: 240 194 78;
-    --material-plastico-soft: 46 40 24;
+    --material-papel: 240 194 78;
+    --material-papel-strong: 240 194 78;
+    --material-papel-soft: 46 40 24;
+    --material-plastico: 124 169 249;
+    --material-plastico-strong: 124 169 249;
+    --material-plastico-soft: 29 38 52;
     --material-vidrio: 63 211 174;
     --material-vidrio-strong: 63 211 174;
     --material-vidrio-soft: 23 48 43;

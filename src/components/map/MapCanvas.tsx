@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from 'react-leaflet';
-import { getMapPointAvailability, MAP_POINT_AVAILABILITY, MATERIAL_MAP } from '@/data/materials';
+import { MaterialBadge } from '@/components/ui/material-badge';
+import { getMapPointAvailability, MAP_POINT_AVAILABILITY } from '@/data/materials';
 import type { RecyclePoint } from '@/types/domain';
 import 'leaflet/dist/leaflet.css';
 
@@ -31,7 +32,6 @@ export function MapCanvas({ points, selectedId, onSelect, center, zoom }: MapCan
         <MapViewport selectedPoint={selectedPoint} />
         {points.map((point) => {
           const availability = MAP_POINT_AVAILABILITY[getMapPointAvailability(point.status)];
-          const acceptedMaterials = point.materials.map((key) => MATERIAL_MAP[key].label);
           return <CircleMarker key={point.id} center={[point.lat, point.lng]} radius={selectedId === point.id ? 11 : 8} pathOptions={{ color: '#fff', weight: 2, fillColor: availability.markerColor, fillOpacity: 0.95 }} eventHandlers={{ click: () => onSelect(point.id) }}>
             <Popup>
               <strong>{point.name}</strong><br />
@@ -39,8 +39,8 @@ export function MapCanvas({ points, selectedId, onSelect, center, zoom }: MapCan
               <span>{availability.label}</span>
               <div className="mt-2 border-t border-border pt-2">
                 <strong>Qué podés reciclar acá</strong>
-                {acceptedMaterials.length > 0
-                  ? <p className="mt-1">{acceptedMaterials.join(' · ')}</p>
+                {point.materials.length > 0
+                  ? <div className="mt-1 flex flex-wrap gap-1.5">{point.materials.map((key) => <MaterialBadge key={key} material={key} withIcon={false} className="px-2 py-1 text-[11px]" />)}</div>
                   : <p className="mt-1">Materiales por confirmar.</p>}
               </div>
             </Popup>

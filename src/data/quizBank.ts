@@ -15,7 +15,7 @@ export const QUIZ_BANK: QuizQuestion[] = [
   {
     question: '¿Qué hacés con una pila AAA usada?',
     category: 'pilas',
-    explanation: 'Las pilas tienen metales pesados y van a un punto especial. Nunca a la bolsa común.',
+    explanation: 'Las pilas son residuos delicados: consultá qué punto de recepción las acepta y nunca las tires a la bolsa común.',
   },
   {
     question: '¿Dónde va una botella de vidrio vacía?',
