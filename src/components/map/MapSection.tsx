@@ -7,16 +7,27 @@ import { navigate } from '@/lib/routes';
 import { useHashRoute } from '@/hooks/useHashRoute';
 import { usePointsStore } from '@/store';
 import type { MaterialKey } from '@/types/domain';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MapCanvas } from './MapCanvas';
 import { MapPointCard } from './MapPointCard';
 import './map.css';
 
-const STATUS_OPTIONS: { value: MapPointAvailability | 'all'; label: string }[] = [
+const STATUS_OPTIONS: { value: MapPointAvailability | 'all'; label: string; color?: string }[] = [
   { value: 'all', label: 'Todos los estados' },
-  { value: 'available', label: MAP_POINT_AVAILABILITY.available.label },
-  { value: 'damaged', label: MAP_POINT_AVAILABILITY.damaged.label },
-  { value: 'unavailable', label: MAP_POINT_AVAILABILITY.unavailable.label },
+  { value: 'available', label: MAP_POINT_AVAILABILITY.available.label, color: MAP_POINT_AVAILABILITY.available.markerColor },
+  { value: 'damaged', label: MAP_POINT_AVAILABILITY.damaged.label, color: MAP_POINT_AVAILABILITY.damaged.markerColor },
+  { value: 'unavailable', label: MAP_POINT_AVAILABILITY.unavailable.label, color: MAP_POINT_AVAILABILITY.unavailable.markerColor },
 ];
+
+const MATERIAL_DOT_CLASSES: Record<MaterialKey, string> = {
+  papel: 'bg-material-papel',
+  plastico: 'bg-material-plastico',
+  vidrio: 'bg-material-vidrio',
+  metal: 'bg-material-metal',
+  organico: 'bg-material-organico',
+  electronicos: 'bg-material-electronicos',
+  pilas: 'bg-material-pilas',
+};
 
 export default function MapSection() {
   const { points } = usePointsStore();
@@ -53,8 +64,8 @@ export default function MapSection() {
       <header className="mb-8 max-w-3xl"><p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Mas y mejor reciclaje · Córdoba</p><h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Encontrá dónde reciclar</h1><p className="mt-3 text-base text-muted sm:text-lg">Explorá puntos verdes y contenedores. Filtrá por material y consultá el estado informado de cada punto.</p></header>
       <div className="mb-5 grid gap-3 rounded-bento border border-border bg-surface p-4 shadow-soft sm:grid-cols-[minmax(0,1fr)_220px_220px] sm:p-5">
         <label className="relative block"><span className="sr-only">Buscar por nombre o dirección</span><Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden="true" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Barrio, dirección o punto verde…" className="h-11 w-full rounded-full border border-border bg-background pl-11 pr-4 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20" /></label>
-        <label className="flex h-11 items-center gap-2 rounded-full border border-border bg-background px-4"><SlidersHorizontal className="size-4 shrink-0 text-muted" aria-hidden="true" /><span className="sr-only">Filtrar por material</span><select value={material} onChange={(event) => { setMaterial(event.target.value as MaterialKey | 'all'); setSelectedId(null); }} className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"><option value="all">Todos los materiales</option>{MATERIALS.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}</select></label>
-        <label className="flex h-11 items-center rounded-full border border-border bg-background px-4"><span className="sr-only">Filtrar por estado</span><select value={status} onChange={(event) => setStatus(event.target.value as MapPointAvailability | 'all')} className="w-full bg-transparent text-sm text-foreground outline-none">{STATUS_OPTIONS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+        <div className="flex h-11 min-w-0 items-center gap-2 rounded-full border border-border bg-background pl-4 pr-2"><SlidersHorizontal className="size-4 shrink-0 text-muted" aria-hidden="true" /><Select value={material} onValueChange={(value) => { setMaterial(value as MaterialKey | 'all'); setSelectedId(null); }}><SelectTrigger aria-label="Filtrar por material" className="h-9 min-w-0 flex-1 rounded-full border-0 bg-transparent px-2 shadow-none focus-visible:ring-0"><SelectValue placeholder="Todos los materiales" /></SelectTrigger><SelectContent><SelectItem value="all"><span className="size-2.5 shrink-0 rounded-full bg-border-strong" aria-hidden="true" /><span>Todos los materiales</span></SelectItem>{MATERIALS.map((item) => <SelectItem key={item.key} value={item.key}><span className={`size-2.5 shrink-0 rounded-full ${MATERIAL_DOT_CLASSES[item.key]}`} aria-hidden="true" /><span>{item.label}</span></SelectItem>)}</SelectContent></Select></div>
+        <Select value={status} onValueChange={(value) => setStatus(value as MapPointAvailability | 'all')}><SelectTrigger aria-label="Filtrar por estado" className="rounded-full border-border bg-background"><SelectValue placeholder="Todos los estados" /></SelectTrigger><SelectContent>{STATUS_OPTIONS.map((item) => <SelectItem key={item.value} value={item.value}><span className={`size-2.5 shrink-0 rounded-full ${item.color ? '' : 'bg-border-strong'}`} style={item.color ? { backgroundColor: item.color } : undefined} aria-hidden="true" /><span>{item.label}</span></SelectItem>)}</SelectContent></Select>
       </div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted" aria-live="polite"><strong className="text-foreground">{filteredPoints.length}</strong> {filteredPoints.length === 1 ? 'punto encontrado' : 'puntos encontrados'}</p>{material !== 'all' && <button type="button" onClick={() => setMaterial('all')} className="text-sm font-medium text-primary hover:underline">Limpiar filtro de {MATERIAL_MAP[material].short}</button>}</div>
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(300px,0.85fr)]">
