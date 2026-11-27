@@ -3,7 +3,6 @@ import { Recycle, ShieldCheck, UserRound } from 'lucide-react';
 
 import { AuthDialog } from '@/components/auth/AuthDialog';
 import { Button } from '@/components/ui/button';
-import { useWastePalette } from '@/components/ui/waste-palette';
 import { NAV_ITEMS } from '@/lib/routes';
 import { useHashRoute } from '@/hooks/useHashRoute';
 import { cn } from '@/lib/utils';
@@ -47,7 +46,6 @@ function BrandMark() {
 /** Barra superior flotante con efecto vidrio (desktop) y compacta (mobile). */
 export function Header() {
   const { route } = useHashRoute();
-  const { openPalette } = useWastePalette();
   const user = useAuthStore((state) => state.user);
   const openAuthDialog = useAuthStore((state) => state.openAuthDialog);
 
@@ -103,15 +101,6 @@ export function Header() {
                 <Recycle aria-hidden="true" />
                 <span>Reportar</span>
               </a>
-            </Button>
-            <Button
-              variant="accent"
-              size="sm"
-              onClick={() => openPalette()}
-              className="hidden gap-2 font-semibold 2xl:inline-flex"
-              aria-label="Buscar a qué contenedor va un residuo (Ctrl más K)"
-            >
-              ¿Dónde va esto?
             </Button>
             <ThemeToggle />
             {user?.role === 'admin' && (
